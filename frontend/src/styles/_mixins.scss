@@ -1,0 +1,182 @@
+@use './variables' as *;
+
+// ==================================================
+// SCSS Utility Mixins Toolkit
+// ==================================================
+
+// -----------------------------
+// Media Query Mixin
+// -----------------------------
+@mixin respond-to($breakpoint) {
+  @if $breakpoint ==sm {
+    @media (max-width: $breakpoint-sm) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==md {
+    @media (max-width: $breakpoint-md) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==lg {
+    @media (max-width: $breakpoint-lg) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==xl {
+    @media (max-width: $breakpoint-xl) {
+      @content;
+    }
+  }
+}
+
+// -----------------------------
+// Flex Layouts
+// -----------------------------
+@mixin flex-center($direction: row) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin flex-between($direction: row) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// -----------------------------
+// Buttons
+// -----------------------------
+@mixin button-style($bg-color,
+  $text-color,
+  $h-padding: $spacing-sm,
+  $v-padding: $spacing-md,
+  $radius: $radius-md,
+  $hover-bg-color: $secondary) {
+  background-color: $bg-color;
+  color: $text-color;
+  border: none;
+  padding: $h-padding $v-padding;
+  border-radius: $radius;
+  cursor: pointer;
+  font-weight: 600;
+  @include transition();
+
+  &:not(:disabled):hover {
+    background-color: $hover-bg-color;
+  }
+
+  &:disabled {
+    background-color: $disabled-bg;
+    border: 1px solid $disabled-border;
+    color: $neutral-dark;
+    cursor: not-allowed;
+  }
+}
+
+// -----------------------------
+// Typography
+// -----------------------------
+@mixin responsive-font($size-sm, $size-md: null, $size-lg: null) {
+  font-size: $size-sm;
+
+  @if $size-md !=null {
+    @media (min-width: $breakpoint-md) {
+      font-size: $size-md;
+    }
+  }
+
+  @if $size-lg !=null {
+    @media (min-width: $breakpoint-lg) {
+      font-size: $size-lg;
+    }
+  }
+}
+
+// -----------------------------
+// Spacing
+// -----------------------------
+@mixin spacing($margin: 0, $padding: 0) {
+  margin: $margin;
+  padding: $padding;
+}
+
+// -----------------------------
+// Borders & Shapes
+// -----------------------------
+@mixin circle($size) {
+  width: $size;
+  height: $size;
+  border-radius: 50%;
+}
+
+@mixin border-radius($radius: $radius-sm) {
+  border-radius: $radius;
+}
+
+// -----------------------------
+// Colors
+// -----------------------------
+@mixin text-color($color) {
+  color: $color;
+}
+
+@mixin bg-color($color) {
+  background-color: $color;
+}
+
+// -----------------------------
+// Shadows
+// -----------------------------
+@mixin box-shadow($x: 0px, $y: 4px, $blur: 6px, $color: rgba(0, 0, 0, 0.1)) {
+  box-shadow: $x $y $blur $color;
+}
+
+// -----------------------------
+// Grids & Containers
+// -----------------------------
+@mixin grid($columns: 12, $gap: $spacing-md) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: $gap;
+}
+
+@mixin container($max-width: 1200px, $padding: $spacing-lg) {
+  width: 100%;
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 $padding;
+}
+
+// -----------------------------
+// Utility Mixins
+// -----------------------------
+@mixin text-ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@mixin transition($properties: all, $duration: 0.3s, $ease: ease-in-out) {
+  transition: $properties $duration $ease;
+}
+
+@mixin visually-hidden {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}

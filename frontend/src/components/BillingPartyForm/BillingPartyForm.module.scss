@@ -1,0 +1,59 @@
+@use '../../styles/globals' as *;
+
+.partyFormContainer {
+    color: $neutral-light;
+    width: 100%;
+    margin-top: 7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .partyForm {
+        background: $neutral-dark;
+        padding: 2rem;
+        border-radius: 8px;
+        width: 100%;
+        max-width: 35rem;
+
+        h2 {
+            text-align: center;
+            margin: 0 0 2rem 0;
+        }
+    }
+}
+
+
+.formGroup {
+    @include flex-column();
+    margin-bottom: 1.5rem;
+
+
+
+    label {
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+    }
+
+    input {
+        width: 100%;
+        padding: 0.8rem 0.6rem;
+        border: none;
+        font-size: 1rem;
+        border-radius: 0.3rem;
+        font-family: $font-body;
+        padding-left: 0.8rem;
+    }
+}
+
+.formControl {
+    width: 100%;
+    text-align: center;
+    margin-top: 3rem;
+
+    .addBtn {
+        @include button-style($primary, $neutral-light, $h-padding: 0.8rem, $v-padding: 3rem);
+        max-width: 40%;
+        font-size: 1rem;
+        letter-spacing: 0.3px;
+    }
+}

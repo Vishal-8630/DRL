@@ -1,0 +1,45 @@
+@use '../../styles/globals' as *;
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background-color: #fff;
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    text-align: left;
+    min-width: 120px;
+  }
+
+  thead {
+    background-color: $secondary-bg;
+
+    th {
+      font-weight: 600;
+      text-align: center;
+      color: $neutral-light;
+    border-radius: $radius-md;
+    }
+  }
+
+  tbody {
+    tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+
+    tr:hover {
+      background-color: #f0f7ff;
+    }
+
+    td {
+      color: $neutral-dark;
+    }
+  }
+}

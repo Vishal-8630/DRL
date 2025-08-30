@@ -1,0 +1,57 @@
+@use '../../styles/globals' as *;
+
+.navbar {
+    @include flex-between();
+    padding: 1rem 2rem;
+    height: 70px;
+    @include bg-color($primary-bg);
+    @include text-color($neutral-light);
+
+    position: fixed;
+    top: 0;
+    z-index: 10000;
+    width: 100%;
+}
+
+.brand {
+    @include flex-center();
+    gap: 0.5rem;
+
+    img {
+        width: 55px;
+        height: 55px;
+    }
+
+    .logo {
+        font-family: $font-heading;
+        font-weight: 700;
+        font-size: 1.6rem;
+    }
+}
+
+.links {
+    display: flex;
+    gap: 1.5rem;
+
+    li {
+        list-style: none;
+
+        .logoutButton {
+            cursor: pointer;
+        }
+
+        a {
+            text-decoration: none;
+            @include text-color($neutral-light);
+            font-size: 1.1rem;
+            font-family: $font-body;
+            font-weight: 500;
+            @include transition(color);
+            letter-spacing: 0.4px;
+
+            &:hover {
+                color: $secondary;
+            }
+        }
+    }
+}
