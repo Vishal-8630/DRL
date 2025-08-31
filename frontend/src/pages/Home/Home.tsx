@@ -15,6 +15,7 @@ import type { RootState } from "../../app/store";
 const SEARCH_MAPPING: Record<string, string> = {
   "Bill Number": "bill_no",
   "Vehicle Number": "vehicle_no",
+  "LR Number": "lr_no",
 };
 
 const DEBOUNCE_DELAY = 500;
@@ -95,7 +96,7 @@ const Home = () => {
         dispatch(
           addMessage({
             type: "info",
-            text: "No document found with the search value",
+            text: "No entry found with the search value",
           })
         );
         fetchEntries();
@@ -173,6 +174,15 @@ const Home = () => {
                 }}
               >
                 Vehicle Number
+              </div>
+              <hr />
+              <div
+                onClick={() => {
+                  setSearchParam("LR Number");
+                  setIsSearchOpen(!isSearchOpen);
+                }}
+              >
+                LR Number
               </div>
             </div>
           </div>

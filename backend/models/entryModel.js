@@ -22,14 +22,9 @@ const entrySchema = mongoose.Schema({
     bill_date: {
         type: Date,
     },
-    billing_party_name: {
-        type: String,
-    },
-    billing_party_address: {
-        type: String,
-    },
-    gst_no: {
-        type: String,
+    billing_party: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "BillingParty"
     },
     lr_no: {
         type: String,

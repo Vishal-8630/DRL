@@ -1,6 +1,13 @@
 import React from "react";
-import { ENTRY_LABELS, type EntryType } from "../../types/entry";
+import {
+  ENTRY_LABELS,
+  EXTRA_CHARGE_LABELS,
+  type EntryType,
+  type ExtraCharge,
+} from "../../types/entry";
 import styles from "./EntryRow.module.scss";
+import { PARTY_LABELS, type BillingPartyType } from "../../types/party";
+import { formatDate } from "../../utils/formatDate";
 
 interface EntryRowProps {
   entry: EntryType;
@@ -14,20 +21,27 @@ const EntryRow: React.FC<EntryRowProps> = ({ entry }) => {
           const key = k as keyof EntryType;
 
           if (key === "extra_charges") {
-            return (
-              <td key={key}>
-                {entry.extra_charges.length > 0
-                  ? entry.extra_charges.map((c) => (
-                      <div key={c._id}>
-                        {c.type}: {c.amount}
-                      </div>
-                    ))
-                  : "—"}
-              </td>
-            );
+            const extra_charges = entry[key] as ExtraCharge[];
+            let combinedCharges = "";
+            extra_charges.forEach((charge) => {
+              combinedCharges += `${charge.type}: ${charge.amount}/${charge.rate}/${charge.per_amount}\n`;
+            });
+            return <td key={key}>{combinedCharges ?? "—"}</td>;
           }
 
-          return <td key={key}>{(entry[key] as string) ?? "—"}</td>;
+          if (key === "billing_party") {
+            return (
+              Object.entries(PARTY_LABELS) as [keyof BillingPartyType, string][]
+            ).map(([subKey, _]) => {
+              return <td key={`${key}.${subKey}`}>{(entry[key][subKey] as string) ?? "—"}</td>;
+            });
+          }
+
+          if (key.toLowerCase().includes("date")) {
+            return (
+              <td key={key}>{formatDate(new Date(entry[key]))}</td>
+            );
+          } else return <td key={key}>{(entry[key] as string) ?? "—"}</td>;
         }
       )}
     </tr>

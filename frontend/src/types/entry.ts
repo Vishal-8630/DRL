@@ -9,7 +9,7 @@ export interface ExtraCharge {
 }
 
 export const EXTRA_CHARGE_LABELS: Record<string, string> = {
-  type: "Type",
+  type: "Extra Charge",
   amount: "Amount",
   rate: "Rate",
   per_amount: "Per Amount",

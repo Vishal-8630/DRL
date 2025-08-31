@@ -12,7 +12,7 @@ import type { RootState } from "../../app/store";
 import type { EntryType } from "../../types/entry";
 import type { BillingPartyType } from "../../types/party";
 
-import styles from "./Entry.module.scss";
+import styles from "./NewEntry.module.scss";
 
 const Entry: React.FC = () => {
   const navigate = useNavigate();
@@ -114,9 +114,23 @@ const Entry: React.FC = () => {
   useEffect(() => {
     if (!(entry.advance.length > 0)) return;
     if (state === "UP") {
+      const gst = Math.round(Number(entry.advance) * 0.06 * 100) / 100;
+      setEntry((prev) => ({
+        ...prev,
+        cgst: String(gst),
+        sgst: String(gst),
+        igst: ""
+      }));
     } else {
+      const gst = Math.round(Number(entry.advance) * 0.12 * 100) / 100;
+      setEntry((prev) => ({
+        ...prev,
+        igst: String(gst),
+        cgst: "",
+        sgst: ""
+      }));
     }
-  }, [state]);
+  }, [entry.advance, state]);
 
   /** -------------------- Event Handlers & Functions -------------------- **/
 
@@ -668,6 +682,9 @@ const Entry: React.FC = () => {
                 onChange={handleChange}
                 placeholder="To Be Billed At"
               />
+              {errorsRef.current.to_be_billed_at && (
+                <p className={styles.errorText}>{errorsRef.current.to_be_billed_at}</p>
+              )}
             </div>
             <div className={styles.formGroup}>
               <label>Hire Amount</label>
@@ -686,6 +703,9 @@ const Entry: React.FC = () => {
                 onChange={handleChange}
                 placeholder="Risk"
               />
+              {errorsRef.current.risk && (
+                <p className={styles.errorText}>{errorsRef.current.risk}</p>
+              )}
             </div>
             <div className={styles.formGroup}>
               <label>Address of Billing Office</label>
@@ -695,6 +715,11 @@ const Entry: React.FC = () => {
                 onChange={handleChange}
                 placeholder="Billing Office Address"
               />
+              {errorsRef.current.address_of_billing_office && (
+                <p className={styles.errorText}>
+                  {errorsRef.current.address_of_billing_office}
+                </p>
+              )}
             </div>
             <div className={styles.formGroup}>
               <label>Rate</label>
@@ -704,6 +729,9 @@ const Entry: React.FC = () => {
                 onChange={handleChange}
                 placeholder="Rate"
               />
+              {errorsRef.current.rate && (
+                <p className={styles.errorText}>{errorsRef.current.rate}</p>
+              )}
             </div>
             <div className={styles.formGroup}>
               <label>Advance</label>

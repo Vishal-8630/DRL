@@ -3,9 +3,10 @@ import styles from "./LRCopy.module.scss";
 import { useState } from "react";
 import Invoice from "../../components/Invoice";
 import { useDispatch } from "react-redux";
-import { entryStart } from "../../features/entry";
+import { entryFailure, entryStart, entrySuccess } from "../../features/entry";
 import api from "../../api/axios";
 import type { EntryType } from "../../types/entry";
+import { addMessage } from "../../features/message";
 
 const LRCopy = () => {
   const [search, setSearch] = useState("");
@@ -23,8 +24,10 @@ const LRCopy = () => {
       const response = await api.get(`/entry/${search}`);
       const obj = response.data;
       setEntry(obj.data[0]);
+      dispatch(entrySuccess());
     } catch (error: any) {
-      console.log(error.response);
+      dispatch(addMessage({ type: "error", text: error.response?.data?.message || "Something went wrong" }));
+      dispatch(entryFailure());
     }
   }
 

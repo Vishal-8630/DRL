@@ -21,9 +21,15 @@ const updateParty = async (req, res, next) => {
     const partyId = req.params.id;
     const { name, address, gst_no } = req.body;
 
-    console.log(name, address, gst_no);
+    const party = await BillingParty.findByIdAndUpdate(partyId, {
+        name,
+        address,
+        gst_no
+    }, { new: true });
 
-    console.log(partyId);
+    if (!party) {
+        return next(new AppError("Billing Party not found", 404));
+    }
     return successResponse(res, "Billing Party Updated");
 }
 

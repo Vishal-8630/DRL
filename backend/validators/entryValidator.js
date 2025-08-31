@@ -5,12 +5,6 @@ export const entryValidation = [
         .notEmpty().withMessage('Bill Number is required'),
     body('bill_date')
     .notEmpty().withMessage("Bill Date is required"),
-    body('billing_party_name')
-    .notEmpty().withMessage("Billing Party Name is required"),
-    body('billing_party_address')
-    .notEmpty().withMessage('Billin Party Address is required'),
-    body('gst_no')
-    .notEmpty().withMessage('GST Number is required'),
     body('lr_no')
     .notEmpty().withMessage('LR Number is required'),
     body('lr_date')

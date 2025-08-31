@@ -13,6 +13,8 @@ import { useSelector } from "react-redux";
 import type { RootState } from "../../app/store";
 import { addMessage } from "../../features/message";
 import api from "../../api/axios";
+import { PARTY_LABELS, type BillingPartyType } from "../../types/party";
+import { formatDate } from "../../utils/formatDate";
 
 interface DropdownViewProps {
   entry: EntryType;
@@ -40,6 +42,9 @@ const DropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate }) => {
   const dispatch = useDispatch();
   const { loading } = useSelector((state: RootState) => state.entry);
 
+  const isKeyDate = (key: keyof EntryType) =>
+    key.toLowerCase().includes("date");
+
   const handleEdit = (key: keyof EntryType) => {
     setEditing((prev) => ({
       ...prev,
@@ -49,7 +54,10 @@ const DropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate }) => {
       ...prev,
       fields: {
         ...prev.fields,
-        [key]: localEntry[key] ?? "",
+        [key]:
+          isKeyDate(key) && typeof localEntry[key] === "string"
+            ? formatDate(new Date(localEntry[key]))
+            : localEntry[key] ?? "",
       },
     }));
   };
@@ -296,7 +304,6 @@ const DropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate }) => {
             {(Object.entries(ENTRY_LABELS) as [keyof EntryType, string][]).map(
               ([k, value]) => {
                 const key = k as keyof EntryType;
-                console.log(key);
                 if (key === "extra_charges") {
                   return (
                     <div key={key} className={styles.extraChargesSection}>
@@ -418,67 +425,78 @@ const DropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate }) => {
                       </div>
                     </div>
                   );
-                } else if (key === "billing_party") {
-                  console.log("Inside billing party", key);
-                  return;
-                  // (Object.entries(PARTY_LABELS) as [keyof BillingPartyType, string][]).map(([subKey, subValue]) => (
-                  //   <div key={`${subKey}-${subValue}`} className={styles.row}>
-                  //     <div className={styles.label}>{subValue}</div>
-                  //     <div className={styles.value}>{localEntry[key][subKey]}</div>
-                  //   </div>
-                  // ));
-                } else {
+                }
+
+                if (key === "billing_party") {
                   return (
-                    <div key={key} className={styles.row}>
-                      <div className={styles.label}>{value}</div>
-
-                      {editing.fields.has(key) ? (
-                        <div className={styles.editArea}>
-                          <input
-                            className={styles.input}
-                            value={(drafts.fields[key] as string) ?? ""}
-                            onChange={(e) =>
-                              setDrafts((d) => ({
-                                ...d,
-                                fields: {
-                                  ...d.fields,
-                                  [key]: e.target.value,
-                                },
-                              }))
-                            }
-                          />
-                          <div className={styles.actions}>
-                            <button
-                              className={styles.saveBtn}
-                              onClick={() => handleSave(key)}
-                            >
-                              Save
-                            </button>
-                            <button
-                              className={styles.cancelBtn}
-                              onClick={() => handleCancel(key)}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className={styles.value}>{localEntry[key]}</div>
-                      )}
-
-                      <div className={styles.controls}>
-                        {!editing.fields.has(key) && (
-                          <button
-                            className={styles.editBtn}
-                            onClick={() => handleEdit(key)}
-                          >
-                            Edit
-                          </button>
-                        )}
+                    Object.entries(PARTY_LABELS) as [
+                      keyof BillingPartyType,
+                      string
+                    ][]
+                  ).map(([subKey, subValue]) => (
+                    <div key={`${subKey}-${subValue}`} className={styles.row}>
+                      <div className={styles.label}>{subValue}</div>
+                      <div className={styles.value}>
+                        {localEntry[key][subKey]}
                       </div>
                     </div>
-                  );
+                  ));
                 }
+
+                return (
+                  <div key={key} className={styles.row}>
+                    <div className={styles.label}>{value}</div>
+
+                    {editing.fields.has(key) ? (
+                      <div className={styles.editArea}>
+                        <input
+                          className={styles.input}
+                          value={(drafts.fields[key] as string) ?? ""}
+                          onChange={(e) =>
+                            setDrafts((d) => ({
+                              ...d,
+                              fields: {
+                                ...d.fields,
+                                [key]: e.target.value,
+                              },
+                            }))
+                          }
+                        />
+                        <div className={styles.actions}>
+                          <button
+                            className={styles.saveBtn}
+                            onClick={() => handleSave(key)}
+                          >
+                            Save
+                          </button>
+                          <button
+                            className={styles.cancelBtn}
+                            onClick={() => handleCancel(key)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={styles.value}>
+                        {isKeyDate(key)
+                          ? formatDate(new Date(localEntry[key]))
+                          : localEntry[key]}
+                      </div>
+                    )}
+
+                    <div className={styles.controls}>
+                      {!editing.fields.has(key) && (
+                        <button
+                          className={styles.editBtn}
+                          onClick={() => handleEdit(key)}
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
               }
             )}
           </div>

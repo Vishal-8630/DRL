@@ -12,5 +12,5 @@ const billingPartySchema = mongoose.Schema({
     }
 });
 
-const BillingParty = mongoose.model("Billing Party", billingPartySchema);
+const BillingParty = mongoose.model("BillingParty", billingPartySchema);
 export default BillingParty;
