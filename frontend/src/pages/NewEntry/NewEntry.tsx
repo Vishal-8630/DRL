@@ -110,27 +110,10 @@ const Entry: React.FC = () => {
     }));
   }, [selectedParty]);
 
-  // Update GSTs when state change
+  // Calculate "Sub Total", "CGST", "SGST", "IGST", "Grand Total" on change of "Rate", "Extra Charges", "State"
   useEffect(() => {
-    if (!(entry.advance.length > 0)) return;
-    if (state === "UP") {
-      const gst = Math.round(Number(entry.advance) * 0.06 * 100) / 100;
-      setEntry((prev) => ({
-        ...prev,
-        cgst: String(gst),
-        sgst: String(gst),
-        igst: ""
-      }));
-    } else {
-      const gst = Math.round(Number(entry.advance) * 0.12 * 100) / 100;
-      setEntry((prev) => ({
-        ...prev,
-        igst: String(gst),
-        cgst: "",
-        sgst: ""
-      }));
-    }
-  }, [entry.advance, state]);
+    calculateFields();
+  }, [entry.rate, entry.extra_charges, state]);
 
   /** -------------------- Event Handlers & Functions -------------------- **/
 
@@ -139,6 +122,10 @@ const Entry: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+
+    if (name === "rate") {
+      calculateFields();
+    }
 
     // Clear error if exists
     if (errorsRef.current[name]) {
@@ -247,6 +234,42 @@ const Entry: React.FC = () => {
     } else {
       dispatch(entryFailure());
     }
+  };
+
+  // Calculate "Sub Total", "CGST", "SGST", "IGST", "Grand Total"
+  const calculateFields = () => {
+    const calculateRate = (state === "UP") ? 0.06 :  0.12;
+    const gst = Math.round(Number(entry.rate) * calculateRate * 100) / 100;
+    if (state === "UP") {
+      setEntry((prev) => ({
+        ...prev,
+        cgst: String(gst),
+        sgst: String(gst),
+        igst: "",
+      }));
+    } else {
+      setEntry((prev) => ({
+        ...prev,
+        igst: String(gst),
+        cgst: "",
+        sgst: "",
+      }));
+    }
+    let totalCharge = 0;
+    let grandTotal = 0;
+    const extraCharges = entry.extra_charges;
+    if (extraCharges?.length > 0) {
+      extraCharges.map((charge) => {
+        totalCharge += parseInt(charge.amount || "0");
+      });
+    }
+    totalCharge += parseInt(entry.rate || "0");
+    grandTotal = totalCharge + 2*gst;
+    setEntry((prev) => ({
+      ...prev,
+      sub_total: String(totalCharge),
+      grand_total: String(grandTotal),
+    }));
   };
 
   /** -------------------- JSX -------------------- **/
@@ -683,7 +706,9 @@ const Entry: React.FC = () => {
                 placeholder="To Be Billed At"
               />
               {errorsRef.current.to_be_billed_at && (
-                <p className={styles.errorText}>{errorsRef.current.to_be_billed_at}</p>
+                <p className={styles.errorText}>
+                  {errorsRef.current.to_be_billed_at}
+                </p>
               )}
             </div>
             <div className={styles.formGroup}>

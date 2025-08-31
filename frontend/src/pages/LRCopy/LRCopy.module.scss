@@ -67,3 +67,31 @@
         transform: scale(0.6);
     }
 }
+
+.controls {
+    width: 100%;
+    text-align: center;
+
+    .btn {
+        margin-left: 2rem;
+        margin-bottom: 1rem;
+        border: none;
+        font-size: 1.1rem;
+        padding: 0.7rem 1rem;
+        font-weight: bold;
+        color: $neutral-light;
+        cursor: pointer;
+        border-radius: 4px;
+        @include transition();
+        letter-spacing: 0.3px;
+        background-color: $neutral-dark;
+
+        &:hover {
+            background-color: lighten($neutral-dark, 10%);
+        }
+
+        &:active {
+            transform: scale(0.7);
+        }
+    }
+}

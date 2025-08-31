@@ -78,7 +78,6 @@ const Home = () => {
       );
     }
     const param = SEARCH_MAPPING[searchParam];
-    console.log(search);
     const values = search
       .split(",")
       .map((v) => v.trim())
@@ -105,7 +104,7 @@ const Home = () => {
       dispatch(
         addMessage({
           type: "error",
-          text: "Failed to fetch. Please try again after sometime.",
+          text: error.response?.data?.message || "Failed to fetch. Please try again after sometime.",
         })
       );
     }

@@ -87,6 +87,10 @@ const searchEntryByParam = async (req, res, next) => {
 
     const entries = await Entry.find(query).populate("billing_party");
 
+    if (!entries?.length) {
+        return next(new AppError("Entry not found", 401));
+    }
+
     return successResponse(res, "", entries);
 }
 
