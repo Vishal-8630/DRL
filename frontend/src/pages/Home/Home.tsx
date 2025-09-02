@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import styles from "./Home.module.scss";
-import { FaChevronDown, FaChevronUp, FaTimes } from "react-icons/fa";
+import { FaTimes, FaSearch, FaChevronDown } from "react-icons/fa";
 import type { EntryType } from "../../types/entry";
 import api from "../../api/axios";
 import Loading from "../../components/Loading";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addMessage } from "../../features/message";
-import { FaSearch } from "react-icons/fa";
 import TableView from "../../components/TableView";
 import DropdownView from "../../components/DropdownView";
-import { useSelector } from "react-redux";
 import type { RootState } from "../../app/store";
+import { type Variants, AnimatePresence, motion } from "framer-motion";
+import { fadeInUp, staggerContainer } from "../../animations/animations";
 
 const SEARCH_MAPPING: Record<string, string> = {
   "Bill Number": "bill_no",
@@ -18,25 +18,88 @@ const SEARCH_MAPPING: Record<string, string> = {
   "LR Number": "lr_no",
 };
 
+const SEARCH_OPTIONS = Object.keys(SEARCH_MAPPING);
+const VIEW_OPTIONS = ["Table", "Dropdown"];
 const DEBOUNCE_DELAY = 500;
 
+const dropDownVariants: Variants = {
+  initial: { opacity: 0, y: -20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  exit: { opacity: 0, y: -5, transition: { duration: 0.3 } },
+};
+
+/* 🔥 Reusable Dropdown Component */
+const Dropdown = ({
+  options,
+  selected,
+  onSelect,
+  isOpen,
+  setIsOpen,
+}: {
+  options: string[];
+  selected: string;
+  onSelect: (val: string) => void;
+  isOpen: boolean;
+  setIsOpen: (v: boolean) => void;
+}) => {
+  return (
+    <div className={styles.viewContent}>
+      <div className={styles.viewList} onClick={() => setIsOpen(!isOpen)}>
+        <span>{selected}</span>
+        <div className={styles.viewIcon}>
+          <motion.span
+            animate={{ rotate: isOpen ? 180 : 0 }}
+            transition={{ duration: 0.07 }}
+          >
+            <FaChevronDown />
+          </motion.span>
+        </div>
+      </div>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className={styles.viewDropdown}
+            variants={dropDownVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            {options.map((opt, idx) => (
+              <div
+                key={opt}
+                onClick={() => {
+                  onSelect(opt);
+                  setIsOpen(false);
+                }}
+              >
+                {opt}
+                {idx < options.length - 1 && <hr />}
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const Home = () => {
-  const [view, setView] = useState("Table");
-  const [open, setOpen] = useState(false);
+  const [view, setView] = useState(VIEW_OPTIONS[0]);
   const [search, setSearch] = useState("");
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchParam, setSearchParam] = useState("Bill Number");
+  const [searchParam, setSearchParam] = useState(SEARCH_OPTIONS[0]);
   const [entries, setEntries] = useState<EntryType[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
+  const [openDropdown, setOpenDropdown] = useState<"search" | "view" | null>(
+    null
+  );
 
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
 
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     try {
-      const response = await api.get("/entry/all-entries");
-      const obj = response.data;
-      setEntries(obj.data);
+      const { data } = await api.get("/entry/all-entries");
+      setEntries(data.data);
     } catch (error: any) {
       dispatch(
         addMessage({
@@ -47,22 +110,18 @@ const Home = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dispatch]);
 
   useEffect(() => {
     fetchEntries();
-  }, []);
+  }, [fetchEntries]);
 
   useEffect(() => {
     if (!search) {
       fetchEntries();
       return;
     }
-
-    const handler = setTimeout(() => {
-      handleSearch();
-    }, DEBOUNCE_DELAY);
-
+    const handler = setTimeout(() => handleSearch(), DEBOUNCE_DELAY);
     return () => clearTimeout(handler);
   }, [search]);
 
@@ -77,34 +136,31 @@ const Home = () => {
         addMessage({ type: "error", text: "Please enter something to search" })
       );
     }
-    const param = SEARCH_MAPPING[searchParam];
-    const values = search
-      .split(",")
-      .map((v) => v.trim())
-      .filter((v) => v);
 
-    const query = encodeURIComponent(values.join(","));
-    const url = `/entry?${param}=${query}`;
+    const param = SEARCH_MAPPING[searchParam];
+    const query = encodeURIComponent(
+      search
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean)
+        .join(",")
+    );
 
     try {
-      const response = await api.get(url);
-      const obj = response.data;
-      if (obj.data.length > 0) {
-        setEntries(obj.data);
+      const { data } = await api.get(`/entry?${param}=${query}`);
+      if (data.data.length > 0) {
+        setEntries(data.data);
       } else {
-        dispatch(
-          addMessage({
-            type: "info",
-            text: "No entry found with the search value",
-          })
-        );
+        dispatch(addMessage({ type: "info", text: "No entry found" }));
         fetchEntries();
       }
     } catch (error: any) {
       dispatch(
         addMessage({
           type: "error",
-          text: error.response?.data?.message || "Failed to fetch. Please try again after sometime.",
+          text:
+            error.response?.data?.message ||
+            "Failed to fetch. Please try again later.",
         })
       );
     }
@@ -123,6 +179,7 @@ const Home = () => {
   return (
     <div className={styles.homeContainer}>
       <div className={styles.viewContainer}>
+        {/* 🔍 Search Section */}
         <div className={styles.searchContainer}>
           <div className={styles.searchWrapper}>
             <div className={styles.icon}>
@@ -141,100 +198,46 @@ const Home = () => {
               </div>
             )}
           </div>
-          <div className={styles.viewContent}>
-            <div className={styles.viewText}>Search By:</div>
-            <div
-              className={styles.viewList}
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-            >
-              <span>{searchParam}</span>
-              <div className={styles.viewIcon}>
-                {isSearchOpen ? <FaChevronUp /> : <FaChevronDown />}
-              </div>
-            </div>
-            <div
-              className={`${styles.viewDropdown} ${
-                isSearchOpen ? styles.open : ""
-              }`}
-            >
-              <div
-                onClick={() => {
-                  setSearchParam("Bill Number");
-                  setIsSearchOpen(!isSearchOpen);
-                }}
-              >
-                Bill Number
-              </div>
-              <hr />
-              <div
-                onClick={() => {
-                  setSearchParam("Vehicle Number");
-                  setIsSearchOpen(!isSearchOpen);
-                }}
-              >
-                Vehicle Number
-              </div>
-              <hr />
-              <div
-                onClick={() => {
-                  setSearchParam("LR Number");
-                  setIsSearchOpen(!isSearchOpen);
-                }}
-              >
-                LR Number
-              </div>
-            </div>
-          </div>
+
+          {/* Search Param Dropdown */}
+          <Dropdown
+            options={SEARCH_OPTIONS}
+            selected={searchParam}
+            onSelect={(val) => setSearchParam(val)}
+            isOpen={openDropdown === "search"}
+            setIsOpen={(isOpen) => setOpenDropdown(isOpen ? "search" : null)}
+          />
         </div>
-        {user ? (
-          <div className={styles.viewContent}>
-            <div className={styles.viewText}>View:</div>
-            <div className={styles.viewList} onClick={() => setOpen(!open)}>
-              <span>{view}</span>
-              <div className={styles.viewIcon}>
-                {open ? <FaChevronUp /> : <FaChevronDown />}
-              </div>
-            </div>
-            <div
-              className={`${styles.viewDropdown} ${open ? styles.open : ""}`}
-            >
-              <div
-                onClick={() => {
-                  setView("Table");
-                  setOpen(!open);
-                }}
-              >
-                Table
-              </div>
-              <hr />
-              <div
-                onClick={() => {
-                  setView("Dropdown");
-                  setOpen(!open);
-                }}
-              >
-                Dropdown
-              </div>
-            </div>
-          </div>
-        ) : null}
+
+        {/* 👤 View Switcher */}
+        {user && (
+          <Dropdown
+            options={VIEW_OPTIONS}
+            selected={view}
+            onSelect={(val) => setView(val)}
+            isOpen={openDropdown === "view"}
+            setIsOpen={(isOpen) => setOpenDropdown(isOpen ? "view" : null)}
+          />
+        )}
       </div>
 
+      {/* 📄 Content Area */}
       <div className={styles.homeContent}>
         {view === "Table" ? (
-          <div>
-            <TableView entries={entries} />
-          </div>
+          <TableView entries={entries} />
         ) : (
-          <>
-            {entries.map((entry, i) => (
-              <DropdownView
-                key={i}
-                entry={entry}
-                onUpdate={updateOriginalEntry}
-              />
+          <motion.div
+            key="dropdown-view"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+          >
+            {entries.map((entry) => (
+              <motion.div key={entry._id} variants={fadeInUp}>
+                <DropdownView entry={entry} onUpdate={updateOriginalEntry} />
+              </motion.div>
             ))}
-          </>
+          </motion.div>
         )}
       </div>
     </div>

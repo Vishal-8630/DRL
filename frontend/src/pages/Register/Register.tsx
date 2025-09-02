@@ -1,29 +1,80 @@
-import { useState } from "react";
-import styles from "./Register.module.scss";
-import {
-  FaUser,
-  FaEnvelope,
-  FaLock,
-  FaIdCard,
-  FaEyeSlash,
-  FaEye,
-} from "react-icons/fa"; // icons
-import { useDispatch } from "react-redux";
-import type { AppDispatch } from "../../app/store";
-import { useSelector } from "react-redux";
-import { authStart, authSuccess, authEnd } from "../../features/auth";
-import api from "../../api/axios";
-import { addMessage } from "../../features/message";
-import { Navigate, useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
-import { selectAuthLoading, selectUser } from "../../features/auth/authSelectors";
+import React, { useState } from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { FaUser, FaEnvelope, FaLock, FaIdCard } from "react-icons/fa";
 
-const Register = () => {
-  const [fullname, setFullname] = useState("");
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{ fullname?: string; email?: string; username?: string; password?: string}>({});
+import { type AppDispatch } from "../../app/store";
+import { authStart, authSuccess, authEnd } from "../../features/auth";
+import { addMessage } from "../../features/message";
+import {
+  selectAuthLoading,
+  selectUser,
+} from "../../features/auth/authSelectors";
+
+import api from "../../api/axios";
+import FormSection from "../../components/FormSection";
+import FormInput from "../../components/FormInput";
+import Button from "../../components/Button";
+
+import styles from "./Register.module.scss";
+
+interface FormData {
+  fullname: string;
+  username: string;
+  email: string;
+  password: string;
+}
+
+interface FormErrors {
+  fullname?: string;
+  username?: string;
+  email?: string;
+  password?: string;
+}
+
+const fields = [
+  {
+    id: "fullname",
+    name: "fullname",
+    label: "Full Name",
+    type: "text",
+    placeholder: "Enter your full name",
+    icon: <FaIdCard />,
+  },
+  {
+    id: "email",
+    name: "email",
+    label: "Email",
+    type: "email",
+    placeholder: "Enter your email",
+    icon: <FaEnvelope />,
+  },
+  {
+    id: "username",
+    name: "username",
+    label: "Username",
+    type: "text",
+    placeholder: "Choose a username",
+    icon: <FaUser />,
+  },
+  {
+    id: "password",
+    name: "password",
+    label: "Password",
+    type: "password",
+    placeholder: "Set your password",
+    icon: <FaLock />,
+  },
+];
+
+const Register: React.FC = () => {
+  const [formData, setFormData] = useState<FormData>({
+    fullname: "",
+    username: "",
+    email: "",
+    password: "",
+  });
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
@@ -31,25 +82,20 @@ const Register = () => {
   const loading = useSelector(selectAuthLoading);
   const user = useSelector(selectUser);
 
-  if (user) return <Navigate to='/' replace />
+  if (user) return <Navigate to="/" replace />;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    if (errors[name as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-    if (name === "fullname") setFullname(value);
-    if (name === "username") setUsername(value);
-    if (name === "email") setEmail(value);
-    if (name === "password") setPassword(value);
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const resetValues = () => {
-    setFullname("");
-    setUsername("");
-    setEmail("");
-    setPassword("");
-    setErrors({});
+  const resetForm = () => {
+    setFormData({ fullname: "", username: "", email: "", password: "" });
+    setFormErrors({});
+    setShowPassword(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,32 +103,24 @@ const Register = () => {
     dispatch(authStart());
 
     try {
-      const response = await api.post("/auth/register", {
-        fullname,
-        username,
-        email,
-        password,
-      });
-      const obj = response.data;
-      dispatch(authSuccess(obj.data.user));
+      const { data } = await api.post("/auth/register", formData);
+      dispatch(authSuccess(data.data.user));
       dispatch(
         addMessage({
           type: "success",
-          text: obj.message || "Registration successfull",
+          text: data.message || "Registration successful",
         })
       );
-      resetValues();
+      resetForm();
       navigate("/");
-    } catch (error: any) {
-      const errors = error.response?.data?.errors;
-      if (errors) {
-        setErrors(errors);
-      }
+    } catch (err: any) {
+      const errors = err.response?.data?.errors || {};
+      setFormErrors(errors);
       dispatch(authEnd());
       dispatch(
         addMessage({
           type: "error",
-          text: error.response?.data?.message || "Registration failed",
+          text: err.response?.data?.message || "Registration failed",
         })
       );
     }
@@ -91,85 +129,32 @@ const Register = () => {
   return (
     <div className={styles.registerContainer}>
       <form onSubmit={handleSubmit} className={styles.registerForm}>
-        <h2 className={styles.title}>Register</h2>
-
-        <div className={styles.formGroup}>
-          <label htmlFor="fullname">Full Name</label>
-          <div className={styles.inputWrapper}>
-            <FaIdCard className={styles.icon} />
-            <input
-              type="text"
-              value={fullname}
-              id="fullname"
-              name="fullname"
-              placeholder="Enter your full name"
+        <FormSection title="Register">
+          {fields.map((field) => (
+            <FormInput
+              key={field.id}
+              {...field}
+              type={
+                field.name === "password" && showPassword ? "text" : field.type
+              }
+              value={formData[field.name as keyof FormData]}
+              error={formErrors[field.name as keyof FormErrors]}
               onChange={handleInputChange}
             />
-          </div>
-          {errors.fullname && <p className={styles.errorText}>{errors.fullname}</p>}
-        </div>
+          ))}
+          
+          <Button
+            type="submit"
+            text="Register"
+            variant="primary"
+            loading={loading}
+            disabled={loading}
+          />
 
-        <div className={styles.formGroup}>
-          <label htmlFor="email">Email</label>
-          <div className={styles.inputWrapper}>
-            <FaEnvelope className={styles.icon} />
-            <input
-              type="email"
-              value={email}
-              id="email"
-              name="email"
-              placeholder="Enter your email"
-              onChange={handleInputChange}
-            />
-          </div>
-          {errors.email && <p className={styles.errorText}>{errors.email}</p>}
-        </div>
-
-        <div className={styles.formGroup}>
-          <label htmlFor="username">Username</label>
-          <div className={styles.inputWrapper}>
-            <FaUser className={styles.icon} />
-            <input
-              type="text"
-              value={username}
-              id="username"
-              name="username"
-              placeholder="Choose a username"
-              onChange={handleInputChange}
-            />
-          </div>
-          {errors.username && <p className={styles.errorText}>{errors.username}</p>}
-        </div>
-
-        <div className={styles.formGroup}>
-          <label htmlFor="password">Password</label>
-          <div className={styles.inputWrapper}>
-            <FaLock className={styles.icon} />
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              id="password"
-              name="password"
-              placeholder="Set your password"
-              onChange={handleInputChange}
-            />
-            <span
-              className={styles.togglePassword}
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
-          </div>
-          {errors.password && <p className={styles.errorText}>{errors.password}</p>}
-        </div>
-
-        <button type="submit" className={styles.registerBtn} disabled={loading}>
-          {loading ? "Registering..." : "Register"}
-        </button>
-
-        <p className={styles.footerText}>
-          Already a user? <Link to='/login'>Login</Link>
-        </p>
+          <p className={styles.footerText}>
+            Already a user? <Link to="/login">Login</Link>
+          </p>
+        </FormSection>
       </form>
     </div>
   );

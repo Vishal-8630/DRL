@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 import api from "../../api/axios";
 import { entryStart, entrySuccess, entryFailure } from "../../features/entry";
@@ -13,13 +14,99 @@ import type { EntryType } from "../../types/entry";
 import type { BillingPartyType } from "../../types/party";
 
 import styles from "./NewEntry.module.scss";
+import FormInput from "../../components/FormInput";
+import FormSection from "../../components/FormSection";
 
+/** -------------------- Form Sections Constants -------------------- **/
+const BILL_INFO_INPUTS = [
+  { type: "number", label: "Bill No.", name: "bill_no" },
+  { type: "date", label: "Bill Date", name: "bill_date" },
+];
+
+const LR_INFO_INPUTS = [
+  { type: "number", label: "LR No.", name: "lr_no" },
+  { type: "date", label: "LR Date", name: "lr_date" },
+];
+
+const CONSIGNOR_INPUTS = [
+  { type: "input", label: "Consignor Name", name: "consignor_name" },
+  {
+    type: "textarea",
+    label: "Consignor From Address",
+    name: "consignor_from_address",
+  },
+  { type: "textarea", label: "Consignor GST No.", name: "consignor_gst_no" },
+];
+
+const CONSIGNEE_INPUTS = [
+  { type: "input", label: "Consignee Name", name: "consignee" },
+  {
+    type: "textarea",
+    label: "Consignee Address",
+    name: "consignor_to_address",
+  },
+  { type: "input", label: "Consignee GST No.", name: "consignee_gst_no" },
+];
+
+const VEHICLE_PACKAGE_INPUTS = [
+  { type: "input", label: "Package", name: "pkg" },
+  { type: "input", label: "Vehicle No.", name: "vehicle_no" },
+  { type: "textarea", label: "From", name: "from" },
+  { type: "textarea", label: "To", name: "to" },
+  { type: "input", label: "BE No.", name: "be_no" },
+  { type: "date", label: "BE Date", name: "be_date" },
+  { type: "number", label: "Weight (KG)", name: "weight" },
+  { type: "input", label: "CBM", name: "cbm" },
+  { type: "input", label: "Fixed", name: "fixed" },
+  { type: "input", label: "Rate Per", name: "rate_per" },
+  { type: "input", label: "Mode of Packing", name: "mode_of_packing" },
+];
+
+const INVOICE_INPUTS = [
+  { type: "input", label: "Invoice No.", name: "invoice_no" },
+  { type: "input", label: "Eway Bill No.", name: "eway_bill_no" },
+  {
+    type: "input",
+    label: "Description of Goods",
+    name: "description_of_goods",
+  },
+  { type: "input", label: "Container No.", name: "container_no" },
+  { type: "input", label: "Value", name: "value" },
+];
+
+const CLERK_YARD_INPUTS = [
+  { type: "input", label: "Name of Clerk", name: "name_of_clerk" },
+  { type: "input", label: "Empty Yard Name", name: "empty_yard_name" },
+  { type: "textarea", label: "Remark If Any", name: "remark_if_any" },
+];
+
+const BILLING_HIRE_INPUTS = [
+  { type: "input", label: "To Be Billed At", name: "to_be_billed_at" },
+  { type: "number", label: "Hire Amount", name: "hire_amount" },
+  { type: "input", label: "Risk", name: "risk" },
+  {
+    type: "textarea",
+    label: "Address of Billing Office",
+    name: "address_of_billing_office",
+  },
+  { type: "number", label: "Rate", name: "rate" },
+  { type: "number", label: "Advance", name: "advance" },
+];
+
+const TAX_TOTAL_INPUTS = [
+  { type: "number", label: "Sub Total", name: "sub_total" },
+  { type: "number", label: "CGST", name: "cgst" },
+  { type: "number", label: "SGST", name: "sgst" },
+  { type: "number", label: "IGST", name: "igst" },
+  { type: "number", label: "Grand Total", name: "grand_total" },
+];
+
+/** -------------------- Component -------------------- **/
 const Entry: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { loading } = useSelector((state: RootState) => state.entry);
 
-  /** -------------------- State Declarations -------------------- **/
   const [entry, setEntry] = useState<EntryType>({
     _id: "",
     bill_no: "",
@@ -83,60 +170,64 @@ const Entry: React.FC = () => {
 
   const [state, setState] = useState("UP");
 
-  /** -------------------- useEffect Hooks -------------------- **/
-
-  // Fetch all billing parties on component mount
+  /** -------------------- Fetch Parties -------------------- **/
   useEffect(() => {
     const fetchAllParties = async () => {
       dispatch(partyStart());
       try {
         const response = await api.get("/party/all-parties");
-        const obj = response.data;
-        setParties(obj.data);
+        setParties(response.data.data);
         dispatch(partySuccess());
       } catch (error: any) {
-        console.log("Error fetching parties:", error.response);
+        console.error("Error fetching parties:", error);
         dispatch(partyFailure());
       }
     };
     fetchAllParties();
   }, [dispatch]);
 
-  // Update the billing party in entry whenever selectedParty changes
+  /** -------------------- Sync Selected Party -------------------- **/
   useEffect(() => {
-    setEntry((prev) => ({
-      ...prev,
-      billing_party: selectedParty,
-    }));
+    setEntry((prev) => ({ ...prev, billing_party: selectedParty }));
   }, [selectedParty]);
 
-  // Calculate "Sub Total", "CGST", "SGST", "IGST", "Grand Total" on change of "Rate", "Extra Charges", "State"
+  /** -------------------- Calculate Fields -------------------- **/
   useEffect(() => {
+    const calculateFields = () => {
+      const gstRate = state === "UP" ? 0.06 : 0.12;
+      const rate = Number(entry.rate) || 0;
+      const extraTotal = entry.extra_charges.reduce(
+        (sum, ec) => sum + Number(ec.amount || 0),
+        0
+      );
+      const gst = Math.round(rate * gstRate * 100) / 100;
+      const subTotal = rate + extraTotal;
+      const grandTotal = state === "UP" ? subTotal + 2 * gst : subTotal + gst;
+
+      setEntry((prev) => ({
+        ...prev,
+        cgst: state === "UP" ? String(gst) : "",
+        sgst: state === "UP" ? String(gst) : "",
+        igst: state !== "UP" ? String(gst) : "",
+        sub_total: String(subTotal),
+        grand_total: String(grandTotal),
+      }));
+    };
     calculateFields();
   }, [entry.rate, entry.extra_charges, state]);
 
-  /** -------------------- Event Handlers & Functions -------------------- **/
-
-  // Handle input change for normal input fields
+  /** -------------------- Handlers -------------------- **/
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-
-    if (name === "rate") {
-      calculateFields();
-    }
-
-    // Clear error if exists
     if (errorsRef.current[name]) {
       errorsRef.current[name] = "";
       setErrors({ ...errorsRef.current });
     }
-
     setEntry((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle extra charges input changes
   const handleExtraChargeChange = (
     id: string,
     field: string,
@@ -150,7 +241,6 @@ const Entry: React.FC = () => {
     }));
   };
 
-  // Add new extra charge
   const addExtraCharge = () => {
     setEntry((prev) => ({
       ...prev,
@@ -161,7 +251,6 @@ const Entry: React.FC = () => {
     }));
   };
 
-  // Remove an extra charge
   const removeExtraCharge = (id: string) => {
     setEntry((prev) => ({
       ...prev,
@@ -169,7 +258,20 @@ const Entry: React.FC = () => {
     }));
   };
 
-  // Validate if a billing party is selected
+  const handleSelectedParty = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    if (value === "none")
+      return setSelectedParty({
+        _id: "",
+        name: "none",
+        address: "",
+        gst_no: "",
+      });
+    const party = parties.find((p) => p.name === value)!;
+    setSelectedParty(party);
+    setPartyError("");
+  };
+
   const partyValidation = () => {
     if (selectedParty.name === "none") {
       setPartyError("Please select a Billing Party");
@@ -178,635 +280,144 @@ const Entry: React.FC = () => {
       );
       partyRef.current?.focus();
       return true;
-    } else {
-      setPartyError("");
-      return false;
     }
-  };
-
-  // Handle billing party selection
-  const handleSelectedParty = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    if (value === "none") {
-      return setSelectedParty({
-        _id: "",
-        name: "none",
-        address: "",
-        gst_no: "",
-      });
-    }
-    const party = parties.find((p) => p.name === value)!;
-    setSelectedParty(party);
     setPartyError("");
+    return false;
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(entryStart());
 
-    const isPartyError = partyValidation();
-    if (!isPartyError) {
-      try {
-        const response = await api.post("/entry/new-entry", { ...entry });
-        dispatch(addMessage({ type: "success", text: response.data.message }));
-        dispatch(entrySuccess());
-        navigate("/");
-      } catch (error: any) {
-        const errorsObj = error.response?.data?.errors;
-        if (errorsObj) {
-          Object.entries(errorsObj).forEach(([key, value]) => {
-            errorsRef.current[key] = value as string;
-          });
-          setErrors({ ...errorsRef.current });
-        }
-        dispatch(
-          addMessage({
-            type: "error",
-            text:
-              Object.keys(errorsObj || {}).length > 0
-                ? "Please fill all the required fields"
-                : "New Entry Creation Failed",
-          })
-        );
-        dispatch(entryFailure());
-      }
-    } else {
+    if (partyValidation()) {
+      dispatch(entryFailure());
+      return;
+    }
+
+    try {
+      const response = await api.post("/entry/new-entry", entry);
+      dispatch(addMessage({ type: "success", text: response.data.message }));
+      dispatch(entrySuccess());
+      navigate("/");
+    } catch (error: any) {
+      const errorsObj = error.response?.data?.errors || {};
+      Object.entries(errorsObj).forEach(([key, value]) => {
+        errorsRef.current[key] = value as string;
+      });
+      setErrors({ ...errorsRef.current });
+      dispatch(
+        addMessage({
+          type: "error",
+          text:
+            Object.keys(errorsObj).length > 0
+              ? "Please fill all the required fields"
+              : "New Entry Creation Failed",
+        })
+      );
       dispatch(entryFailure());
     }
   };
 
-  // Calculate "Sub Total", "CGST", "SGST", "IGST", "Grand Total"
-  const calculateFields = () => {
-    const calculateRate = (state === "UP") ? 0.06 :  0.12;
-    const gst = Math.round(Number(entry.rate) * calculateRate * 100) / 100;
-    if (state === "UP") {
-      setEntry((prev) => ({
-        ...prev,
-        cgst: String(gst),
-        sgst: String(gst),
-        igst: "",
-      }));
-    } else {
-      setEntry((prev) => ({
-        ...prev,
-        igst: String(gst),
-        cgst: "",
-        sgst: "",
-      }));
-    }
-    let totalCharge = 0;
-    let grandTotal = 0;
-    const extraCharges = entry.extra_charges;
-    if (extraCharges?.length > 0) {
-      extraCharges.map((charge) => {
-        totalCharge += parseInt(charge.amount || "0");
-      });
-    }
-    totalCharge += parseInt(entry.rate || "0");
-    grandTotal = totalCharge + 2*gst;
-    setEntry((prev) => ({
-      ...prev,
-      sub_total: String(totalCharge),
-      grand_total: String(grandTotal),
-    }));
-  };
+  /** -------------------- Render Inputs -------------------- **/
+  const renderInputs = (inputs: typeof BILL_INFO_INPUTS) =>
+    inputs.map((input) => (
+      <FormInput
+        key={input.name}
+        type={input.type}
+        id={input.name}
+        label={input.label}
+        name={input.name}
+        value={String(entry[input.name as keyof EntryType] || "")}
+        placeholder={input.label}
+        error={errorsRef.current[input.name]}
+        onChange={handleChange}
+      />
+    ));
 
   /** -------------------- JSX -------------------- **/
   return (
     <div className={styles.entryFormContainer}>
       <form className={styles.entryForm} onSubmit={handleSubmit}>
         <div className={styles.inputArea}>
-          {/* -------------------- Bill Information -------------------- */}
-          <div className={styles.formSection}>
-            <div className={styles.sectionTitle}>Bill Information</div>
-            <div className={styles.formGroup}>
-              <label>Bill No</label>
-              <input
-                name="bill_no"
-                value={entry.bill_no}
-                onChange={handleChange}
-                placeholder="Bill No"
-              />
-              {errorsRef.current.bill_no && (
-                <p className={styles.errorText}>{errorsRef.current.bill_no}</p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Bill Date</label>
-              <input
-                type="date"
-                name="bill_date"
-                value={entry.bill_date}
-                onChange={handleChange}
-              />
-              {errorsRef.current.bill_date && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.bill_date}
-                </p>
-              )}
-            </div>
-
+          <FormSection title="Bill Information">
+            {renderInputs(BILL_INFO_INPUTS)}
             <div className={styles.formGroup}>
               <label>Billing Party Name</label>
-              <select
-                name="billing_party_name"
+              <motion.select
                 value={selectedParty.name}
                 onChange={handleSelectedParty}
                 ref={partyRef}
+                whileHover={{ scale: 1.03 }}
+                transition={{ type: "spring", duration: 0.5 }}
+                style={{ marginBottom: "1rem" }}
               >
                 <option value="none">Select Billing Party</option>
-                {parties.map((party) => (
-                  <option key={party._id} value={party.name}>
-                    {party.name}
+                {parties.map((p) => (
+                  <option key={p._id} value={p.name}>
+                    {p.name}
                   </option>
                 ))}
-              </select>
+              </motion.select>
               {partyError && <p className={styles.errorText}>{partyError}</p>}
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Billing Party Address</label>
-              <textarea
-                name="billing_party_address"
-                value={selectedParty.address}
-                onChange={handleChange}
+              <FormInput
+                type="textarea"
+                id="address"
+                name="address"
+                label="Billing Party Address"
                 placeholder="Billing Party Address"
+                value={selectedParty.address}
+                onChange={() => {}}
               />
-            </div>
-            <div className={styles.formGroup}>
-              <label>GST No</label>
-              <input
+              <FormInput
+                type="input"
+                id="gst_no"
                 name="gst_no"
+                label="GST No."
+                placeholder="GST No."
                 value={selectedParty.gst_no}
-                onChange={handleChange}
-                placeholder="GST No"
+                onChange={() => {}}
               />
             </div>
-          </div>
+          </FormSection>
 
-          {/* -------------------- LR Information -------------------- */}
-          <div className={styles.formSection}>
-            <div className={styles.sectionTitle}>LR Information</div>
-            <div className={styles.formGroup}>
-              <label>LR No</label>
-              <input
-                name="lr_no"
-                value={entry.lr_no}
-                onChange={handleChange}
-                placeholder="LR No"
-              />
-              {errorsRef.current.lr_no && (
-                <p className={styles.errorText}>{errorsRef.current.lr_no}</p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>LR Date</label>
-              <input
-                type="date"
-                name="lr_date"
-                value={entry.lr_date}
-                onChange={handleChange}
-              />
-              {errorsRef.current.lr_date && (
-                <p className={styles.errorText}>{errorsRef.current.lr_date}</p>
-              )}
-            </div>
-          </div>
+          <FormSection title="LR Information">
+            {renderInputs(LR_INFO_INPUTS)}
+          </FormSection>
+          <FormSection title="Consignor Information">
+            {renderInputs(CONSIGNOR_INPUTS)}
+          </FormSection>
+          <FormSection title="Consignee Information">
+            {renderInputs(CONSIGNEE_INPUTS)}
+          </FormSection>
+          <FormSection title="Vehicle & Package Info">
+            {renderInputs(VEHICLE_PACKAGE_INPUTS)}
+          </FormSection>
+          <FormSection title="Invoice & Eway">
+            {renderInputs(INVOICE_INPUTS)}
+          </FormSection>
+          <FormSection title="Clerk & Yard">
+            {renderInputs(CLERK_YARD_INPUTS)}
+          </FormSection>
+          <FormSection title="Billing & Hire">
+            {renderInputs(BILLING_HIRE_INPUTS)}
+          </FormSection>
 
-          {/* -------------------- Consignor Information -------------------- */}
-          <div className={styles.formSection}>
-            <div className={styles.sectionTitle}>Consignor Information</div>
-            <div className={styles.formGroup}>
-              <label>Consignor Name</label>
-              <input
-                name="consignor_name"
-                value={entry.consignor_name}
-                onChange={handleChange}
-                placeholder="Consignor Name"
-              />
-              {errorsRef.current.consignor_name && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.consignor_name}
-                </p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Consignor From Address</label>
-              <textarea
-                name="consignor_from_address"
-                value={entry.consignor_from_address}
-                onChange={handleChange}
-                placeholder="Consignor Address"
-              />
-              {errorsRef.current.consignor_from_address && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.consignor_from_address}
-                </p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Consignor GST No</label>
-              <input
-                name="consignor_gst_no"
-                value={entry.consignor_gst_no}
-                onChange={handleChange}
-                placeholder="Consignor GST No"
-              />
-              {errorsRef.current.consignor_gst_no && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.consignor_gst_no}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* -------------------- Consignee Information -------------------- */}
-          <div className={styles.formSection}>
-            <div className={styles.sectionTitle}>Consignee Information</div>
-            <div className={styles.formGroup}>
-              <label>Consignee Name</label>
-              <input
-                name="consignee"
-                value={entry.consignee}
-                onChange={handleChange}
-                placeholder="Consignee Name"
-              />
-              {errorsRef.current.consignee && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.consignee}
-                </p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Consignor To Address</label>
-              <textarea
-                name="consignor_to_address"
-                value={entry.consignor_to_address}
-                onChange={handleChange}
-                placeholder="Consignee Address"
-              />
-              {errorsRef.current.consignor_to_address && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.consignor_to_address}
-                </p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Consignee GST No</label>
-              <input
-                name="consignee_gst_no"
-                value={entry.consignee_gst_no}
-                onChange={handleChange}
-                placeholder="Consignee GST No"
-              />
-              {errorsRef.current.consignee_gst_no && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.consignee_gst_no}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* -------------------- Vehicle & Package Info -------------------- */}
-          <div className={styles.formSection}>
-            <div className={styles.sectionTitle}>Vehicle & Package Info</div>
-            <div className={styles.formGroup}>
-              <label>Package</label>
-              <input
-                name="pkg"
-                value={entry.pkg}
-                onChange={handleChange}
-                placeholder="Package"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Vehicle No</label>
-              <input
-                name="vehicle_no"
-                value={entry.vehicle_no}
-                onChange={handleChange}
-                placeholder="Vehicle No"
-              />
-              {errorsRef.current.vehicle_no && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.vehicle_no}
-                </p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>From</label>
-              <input
-                name="from"
-                value={entry.from}
-                onChange={handleChange}
-                placeholder="From"
-              />
-              {errorsRef.current.from && (
-                <p className={styles.errorText}>{errorsRef.current.from}</p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>To</label>
-              <input
-                name="to"
-                value={entry.to}
-                onChange={handleChange}
-                placeholder="To"
-              />
-              {errorsRef.current.to && (
-                <p className={styles.errorText}>{errorsRef.current.to}</p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>BE No</label>
-              <input
-                name="be_no"
-                value={entry.be_no}
-                onChange={handleChange}
-                placeholder="BE No"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>BE Date</label>
-              <input
-                type="date"
-                name="be_date"
-                value={entry.be_date}
-                onChange={handleChange}
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Weight</label>
-              <input
-                name="weight"
-                value={entry.weight}
-                onChange={handleChange}
-                placeholder="Weight"
-              />
-              {errorsRef.current.weight && (
-                <p className={styles.errorText}>{errorsRef.current.weight}</p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>CBM</label>
-              <input
-                name="cbm"
-                value={entry.cbm}
-                onChange={handleChange}
-                placeholder="CBM"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Fixed</label>
-              <input
-                name="fixed"
-                value={entry.fixed}
-                onChange={handleChange}
-                placeholder="Fixed"
-              />
-              {errorsRef.current.fixed && (
-                <p className={styles.errorText}>{errorsRef.current.fixed}</p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Rate Per</label>
-              <input
-                name="rate_per"
-                value={entry.rate_per}
-                onChange={handleChange}
-                placeholder="Rate Per"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Mode of Packing</label>
-              <input
-                name="mode_of_packing"
-                value={entry.mode_of_packing}
-                onChange={handleChange}
-                placeholder="Mode of Packing"
-              />
-              {errorsRef.current.mode_of_packing && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.mode_of_packing}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* -------------------- Invoice & Eway Bill -------------------- */}
-          <div className={styles.formSection}>
-            <div className={styles.sectionTitle}>Invoice & Eway</div>
-            <div className={styles.formGroup}>
-              <label>Invoice No</label>
-              <input
-                name="invoice_no"
-                value={entry.invoice_no}
-                onChange={handleChange}
-                placeholder="Invoice No"
-              />
-              {errorsRef.current.invoice_no && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.invoice_no}
-                </p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Eway Bill No</label>
-              <input
-                name="eway_bill_no"
-                value={entry.eway_bill_no}
-                onChange={handleChange}
-                placeholder="Eway Bill No"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Description of Goods</label>
-              <textarea
-                name="description_of_goods"
-                value={entry.description_of_goods}
-                onChange={handleChange}
-                placeholder="Description of Goods"
-              />
-              {errorsRef.current.description_of_goods && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.description_of_goods}
-                </p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Container No</label>
-              <input
-                name="container_no"
-                value={entry.container_no}
-                onChange={handleChange}
-                placeholder="Container No"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Value</label>
-              <input
-                name="value"
-                value={entry.value}
-                onChange={handleChange}
-                placeholder="Value"
-              />
-              {errorsRef.current.value && (
-                <p className={styles.errorText}>{errorsRef.current.value}</p>
-              )}
-            </div>
-          </div>
-
-          {/* -------------------- Clerk & Yard -------------------- */}
-          <div className={styles.formSection}>
-            <div className={styles.sectionTitle}>Clerk & Yard</div>
-            <div className={styles.formGroup}>
-              <label>Name of Clerk</label>
-              <input
-                name="name_of_clerk"
-                value={entry.name_of_clerk}
-                onChange={handleChange}
-                placeholder="Name of Clerk"
-              />
-              {errorsRef.current.name_of_clerk && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.name_of_clerk}
-                </p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Empty Yard Name</label>
-              <input
-                name="empty_yard_name"
-                value={entry.empty_yard_name}
-                onChange={handleChange}
-                placeholder="Empty Yard Name"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Remark If Any</label>
-              <textarea
-                name="remark_if_any"
-                value={entry.remark_if_any}
-                onChange={handleChange}
-                placeholder="Remark"
-              />
-            </div>
-          </div>
-
-          {/* -------------------- Billing & Hire -------------------- */}
-          <div className={styles.formSection}>
-            <div className={styles.sectionTitle}>Billing & Hire</div>
-            <div className={styles.formGroup}>
-              <label>To Be Billed At</label>
-              <input
-                name="to_be_billed_at"
-                value={entry.to_be_billed_at}
-                onChange={handleChange}
-                placeholder="To Be Billed At"
-              />
-              {errorsRef.current.to_be_billed_at && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.to_be_billed_at}
-                </p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Hire Amount</label>
-              <input
-                name="hire_amount"
-                value={entry.hire_amount}
-                onChange={handleChange}
-                placeholder="Hire Amount"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Risk</label>
-              <input
-                name="risk"
-                value={entry.risk}
-                onChange={handleChange}
-                placeholder="Risk"
-              />
-              {errorsRef.current.risk && (
-                <p className={styles.errorText}>{errorsRef.current.risk}</p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Address of Billing Office</label>
-              <textarea
-                name="address_of_billing_office"
-                value={entry.address_of_billing_office}
-                onChange={handleChange}
-                placeholder="Billing Office Address"
-              />
-              {errorsRef.current.address_of_billing_office && (
-                <p className={styles.errorText}>
-                  {errorsRef.current.address_of_billing_office}
-                </p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Rate</label>
-              <input
-                name="rate"
-                value={entry.rate}
-                onChange={handleChange}
-                placeholder="Rate"
-              />
-              {errorsRef.current.rate && (
-                <p className={styles.errorText}>{errorsRef.current.rate}</p>
-              )}
-            </div>
-            <div className={styles.formGroup}>
-              <label>Advance</label>
-              <input
-                name="advance"
-                value={entry.advance}
-                onChange={handleChange}
-                placeholder="Advance"
-              />
-            </div>
-          </div>
-
-          {/* -------------------- Extra Charges -------------------- */}
-          <div className={styles.formSection}>
+          <FormSection title="Extra Charges">
             <div className={styles.extraChargesSection}>
-              <div className={styles.sectionTitle}>Extra Charges</div>
               {entry.extra_charges.map((ec) => (
                 <div key={ec._id} className={styles.extraChargeRow}>
-                  <input
-                    value={ec.type}
-                    onChange={(e) =>
-                      handleExtraChargeChange(ec._id, "type", e.target.value)
-                    }
-                    placeholder="Type"
-                  />
-                  <input
-                    value={ec.amount}
-                    onChange={(e) =>
-                      handleExtraChargeChange(ec._id, "amount", e.target.value)
-                    }
-                    placeholder="Amount"
-                  />
-                  <input
-                    value={ec.rate}
-                    onChange={(e) =>
-                      handleExtraChargeChange(ec._id, "rate", e.target.value)
-                    }
-                    placeholder="Rate"
-                  />
-                  <input
-                    value={ec.per_amount}
-                    onChange={(e) =>
-                      handleExtraChargeChange(
-                        ec._id,
-                        "per_amount",
-                        e.target.value
-                      )
-                    }
-                    placeholder="Per Amount"
-                  />
+                  {["type", "amount", "rate", "per_amount"].map((field) => (
+                    <input
+                      key={field}
+                      value={ec[field as keyof typeof ec]}
+                      onChange={(e) =>
+                        handleExtraChargeChange(ec._id, field, e.target.value)
+                      }
+                      placeholder={
+                        field.charAt(0).toUpperCase() + field.slice(1)
+                      }
+                    />
+                  ))}
                   <button
                     type="button"
                     onClick={() => removeExtraCharge(ec._id)}
@@ -823,69 +434,26 @@ const Entry: React.FC = () => {
                 Add Extra Charge
               </button>
             </div>
-          </div>
+          </FormSection>
 
-          {/* -------------------- Tax & Total -------------------- */}
-          <div className={styles.formSection}>
-            <div className={styles.sectionTitle}>Tax & Total</div>
-            <div className={styles.formGroup}>
-              <label>Sub Total</label>
-              <input
-                name="sub_total"
-                value={entry.sub_total}
-                onChange={handleChange}
-                placeholder="Sub Total"
-              />
-            </div>
+          <FormSection title="Tax & Total">
             <div className={styles.formGroup}>
               <label>State</label>
-              <select
+              <motion.select
                 name="state"
                 id="state"
                 onChange={(e) => setState(e.target.value)}
+                whileHover={{ scale: 1.03 }}
+                transition={{ type: "spring", duration: 0.5 }}
               >
                 <option value="UP">UP</option>
                 <option value="Not-UP">Not-UP</option>
-              </select>
+              </motion.select>
             </div>
-            <div className={styles.formGroup}>
-              <label>CGST</label>
-              <input
-                name="cgst"
-                value={entry.cgst}
-                onChange={handleChange}
-                placeholder="CGST"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>SGST</label>
-              <input
-                name="sgst"
-                value={entry.sgst}
-                onChange={handleChange}
-                placeholder="SGST"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>IGST</label>
-              <input
-                name="igst"
-                value={entry.igst}
-                onChange={handleChange}
-                placeholder="IGST"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Grand Total</label>
-              <input
-                name="grand_total"
-                value={entry.grand_total}
-                onChange={handleChange}
-                placeholder="Grand Total"
-              />
-            </div>
-          </div>
+            {renderInputs(TAX_TOTAL_INPUTS)}
+          </FormSection>
         </div>
+
         <div className={styles.buttonContainer}>
           <button type="submit" className={styles.submitBtn} disabled={loading}>
             Add Entry

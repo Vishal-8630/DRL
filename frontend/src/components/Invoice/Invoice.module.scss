@@ -8,9 +8,9 @@
     border: 1px solid #000
 }
 
-.box {
-    border: 1px solid #000;
-    width: 100px;
+hr {
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 .bottom {
@@ -23,6 +23,22 @@
     @include flex-column();
     align-items: center;
     justify-content: center;
+}
+
+.flex_center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+
+    hr {
+        width: 100%;
+    }
+
+    div {
+        width: 100%;
+    }
 }
 
 .flex_1 {
@@ -49,22 +65,9 @@
     flex: 6;
 }
 
-.header {
-    display: flex;
-}
-
-.section_1 {
-    display: flex;
-}
-
-.section_2 {
-    display: flex;
-}
-
-.section_3 {
-    display: flex;
-}
-
+.section_1,
+.section_2,
+.section_3,
 .section_4 {
     display: flex;
 }
@@ -79,6 +82,10 @@
 
 .bold {
     font-weight: bold;
+
+    @include respond-to(lg) {
+        font-size: 0.5rem;
+    }
 }
 
 .innerPadding {
@@ -89,67 +96,196 @@
     color: blue;
 }
 
-.drl {
-    font-size: 3.5rem;
-    font-weight: bold;
-    color: red;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
-    text-shadow: 3px 3px 4px rgba(0, 0, 0, 0.3);
-}
-
-.flex_center {
+.header {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    width: 100%;
 
-    hr {
-        width: 100%;
+    >.box {
+        border: 1px solid black;
     }
 
-    div {
-        width: 100%;
+    >:first-child {
+        border-right: none;
     }
-}
 
-.lr_no_box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
+    >:last-child {
+        border-left: none;
+    }
 
-    div {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        margin-top: 30px;
-        font-size: 1.1rem;
-        text-align: center;
+    .drl {
+        font-size: 3.5rem;
+        font-weight: bold;
+        color: red;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+        text-shadow: 3px 3px 4px rgba(0, 0, 0, 0.3);
 
-        .lr_header {
-            margin-right: 30px;
+        @include respond-to(lg) {
+            font-size: 1.7rem;
+        }
+    }
+
+    @include respond-to(lg) {
+        .logo {
+            img {
+
+                width: 70px;
+                height: 70px;
+            }
+        }
+
+        >:first-child {
+            padding: 0.6rem;
+            text-align: center;
+        }
+
+        .field_name {
+            font-size: 0.5rem;
+        }
+
+        .underlineText {
+            font-size: 0.5rem;
+        }
+
+        >:last-child {
+            padding: 0.6rem;
         }
     }
 }
 
-.owner_risk {
-    width: 100%;
-    padding: 10px;
-
-    div {
-        margin-top: 3px;
+.section_1 {
+    >.box {
+        border: 1px solid black;
     }
 
-    .details {
+    >:first-child,
+    >:nth-child(2),
+    >:nth-child(3) {
+        border-top: none;
+        border-right: none;
+    }
+
+    >:last-child {
+        border-top: none;
+    }
+
+    .lr_no_box {
         display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+
+        div {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            width: 100%;
+            margin-top: 30px;
+            font-size: 1.1rem;
+            text-align: center;
+
+            .lr_header {
+                margin-right: 30px;
+
+                @include respond-to(lg) {
+                    margin-right: 5px;
+                }
+            }
+        }
+    }
+
+    .owner_risk {
+        width: 100%;
+        padding: 10px;
+
+        div {
+            margin-top: 3px;
+        }
+
+        .details {
+            display: flex;
+        }
+
+        @include respond-to(lg) {
+
+            >:nth-child(1),
+            >:nth-child(2),
+            >:nth-child(3) {
+                font-size: 0.5rem;
+            }
+        }
     }
 }
 
-hr {
-    margin-top: 5px;
-    margin-bottom: 5px;
+.section_2 {
+    >:first-child {
+        border-left: 1px solid black;
+    }
+
+    >:first-child,
+    >:nth-child(2),
+    >:last-child {
+        border-right: 1px solid black;
+    }
+}
+
+.section_3 {
+
+    >:first-child {
+        border-left: 1px solid black;
+        border-right: 1px solid black;
+    }
+
+    >:first-child {
+        table {
+
+            thead,
+            tbody {
+                tr {
+                    >:first-child {
+                        border-left: none;
+                    }
+
+                    >:last-child {
+                        border-right: none;
+                    }
+                }
+            }
+        }
+    }
+
+    >:nth-child(2) {
+        table {
+
+            thead,
+            tbody {
+                tr {
+                    >:first-child {
+                        border-left: none;
+                    }
+                }
+            }
+
+            tbody {
+                tr {
+                    >:first-child {
+                        border-top: none;
+                        border-right: none;
+                    }
+                }
+
+                > tr {
+                    >* {
+                        border-bottom: none;
+                    }
+                }
+            }
+        }
+    }
+
+    >:last-child {
+        border-top: 1px solid black;
+        border-right: 1px solid black;
+    }
 }
 
 .parentDiv {
@@ -176,6 +312,14 @@ hr {
 
 .damage_section {
     padding: 10px;
+
+    @include respond-to(lg) {
+
+        p,
+        div {
+            font-size: 0.5rem;
+        }
+    }
 }
 
 .invoice_info {
@@ -186,6 +330,10 @@ hr {
     font-size: 1.1rem;
     color: rgb(37, 149, 255);
     font-family: Verdana, Geneva, Tahoma, sans-serif;
+
+    @include respond-to(lg) {
+        font-size: 0.5rem;
+    }
 }
 
 .consignor_details {
@@ -233,6 +381,10 @@ hr {
             &.description {
                 width: 60%;
             }
+
+            @include respond-to(lg) {
+                font-size: 0.5rem;
+            }
         }
     }
 }
@@ -245,11 +397,97 @@ hr {
     border: 1px solid black;
     justify-content: space-around;
     padding: 10px;
-    
+
     .lastDiv {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 20px;
     }
+}
+
+@media print {
+
+    .invoiceContainer {
+        width: 100%;
+        min-height: 100%;
+        margin: 2rem auto 0 auto;
+    }
+
+    // .bold {
+    //     font-size: 0.5rem;
+    // }
+
+    // .auto_populated {
+    //     font-size: 0.5rem;
+    // }
+
+    // .header {
+    //     .logo {
+    //         img {
+
+    //             width: 70px;
+    //             height: 70px;
+    //         }
+    //     }
+
+    //     .drl {
+    //         font-size: 1.5rem;
+    //         padding: 5px 0;
+    //     }
+
+    //     >:first-child {
+    //         padding: 0.6rem;
+    //         text-align: center;
+    //     }
+
+    //     .field_name {
+    //         font-size: 0.5rem;
+    //     }
+
+    //     .underlineText {
+    //         font-size: 0.5rem;
+    //     }
+
+    //     >:last-child {
+    //         padding: 0.6rem;
+    //     }
+    // }
+
+    // .lr_no_box {
+    //     flex: 1;
+
+    //     div {
+    //         margin: 0;
+    //     }
+
+    //     .lr_header {
+    //         margin-right: 5px;
+    //     }
+    // }
+
+    // .owner_risk {
+    //     flex: 3;
+
+    //     >:nth-child(1),
+    //     >:nth-child(2),
+    //     >:nth-child(3) {
+    //         font-size: 0.5rem;
+    //     }
+    // }
+
+    // .damage_section {
+    //     flex: 1;
+
+    //     p,
+    //     div {
+    //         font-size: 0.5rem;
+    //     }
+    // }
+
+    // table {
+    //     th {
+    //         font-size: 0.5rem;
+    //     }
+    // }
 }

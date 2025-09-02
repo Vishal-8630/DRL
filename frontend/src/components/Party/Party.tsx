@@ -6,6 +6,8 @@ import { selectAuthLoading } from "../../features/auth/authSelectors";
 import { partyFailure, partyStart, partySuccess } from "../../features/party";
 import { addMessage } from "../../features/message";
 import api from "../../api/axios";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 
 interface PartyProps {
   party: BillingPartyType;
@@ -16,11 +18,24 @@ interface PartyProps {
     isOpen: boolean;
   };
   updatePartyState: (partyId: string, newState: Partial<any>) => void;
-  updateDraft: (partyId: string, key: keyof BillingPartyType, value: string) => void;
+  updateDraft: (
+    partyId: string,
+    key: keyof BillingPartyType,
+    value: string
+  ) => void;
   toggleEditing: (partyId: string, key: keyof BillingPartyType) => void;
   toggleOpen: (partyId: string) => void;
   updateOriginalParty: (updatedParty: BillingPartyType) => void;
 }
+
+const dropDownVariants: Variants = {
+  hidden: { height: 0 },
+  visible: (height: number) => ({
+    height,
+    transition: { duration: 0.3, ease: "easeInOut" },
+  }),
+  exit: { height: 0, transition: { duration: 0.3, ease: "easeInOut" } },
+};
 
 const Party: React.FC<PartyProps> = ({
   party,
@@ -29,10 +44,18 @@ const Party: React.FC<PartyProps> = ({
   updateDraft,
   toggleEditing,
   toggleOpen,
-  updateOriginalParty
+  updateOriginalParty,
 }) => {
   const dispatch = useDispatch();
   const loading = useSelector(selectAuthLoading);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      setHeight(contentRef.current.scrollHeight);
+    }
+  });
 
   const handleEdit = (key: keyof BillingPartyType) => {
     toggleEditing(party._id, key);
@@ -113,65 +136,79 @@ const Party: React.FC<PartyProps> = ({
         </div>
       )}
 
-      {partyState.isOpen && (
-        <div className={styles.content}>
-          <div className={styles.list}>
-            {(
-              Object.entries(PARTY_LABELS) as [keyof BillingPartyType, string][]
-            ).map(([key, label]) => {
-              const isEditing = partyState.editing.has(key);
-              const value = isEditing
-                ? partyState.drafts[key] ?? ""
-                : partyState.localParty[key] ?? "—";
+      <AnimatePresence>
+        {partyState.isOpen && (
+          <motion.div
+            ref={contentRef}
+            className={styles.content}
+            variants={dropDownVariants}
+            style={{ overflow: "hidden" }}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            custom={height}
+          >
+            <div className={styles.list}>
+              {(
+                Object.entries(PARTY_LABELS) as [
+                  keyof BillingPartyType,
+                  string
+                ][]
+              ).map(([key, label]) => {
+                const isEditing = partyState.editing.has(key);
+                const value = isEditing
+                  ? partyState.drafts[key] ?? ""
+                  : partyState.localParty[key] ?? "—";
 
-              return (
-                <div key={key} className={styles.row}>
-                  <div className={styles.label}>{label}</div>
+                return (
+                  <div key={key} className={styles.row}>
+                    <div className={styles.label}>{label}</div>
 
-                  {isEditing ? (
-                    <div className={styles.editArea}>
-                      <input
-                        className={styles.input}
-                        value={value as string}
-                        onChange={(e) =>
-                          updateDraft(party._id, key, e.target.value)
-                        }
-                      />
-                      <div className={styles.actions}>
-                        <button
-                          className={styles.saveBtn}
-                          onClick={() => handleSave(key)}
-                        >
-                          Save
-                        </button>
-                        <button
-                          className={styles.cancelBtn}
-                          onClick={() => handleCancel(key)}
-                        >
-                          Cancel
-                        </button>
+                    {isEditing ? (
+                      <div className={styles.editArea}>
+                        <input
+                          className={styles.input}
+                          value={value as string}
+                          onChange={(e) =>
+                            updateDraft(party._id, key, e.target.value)
+                          }
+                        />
+                        <div className={styles.actions}>
+                          <button
+                            className={styles.saveBtn}
+                            onClick={() => handleSave(key)}
+                          >
+                            Save
+                          </button>
+                          <button
+                            className={styles.cancelBtn}
+                            onClick={() => handleCancel(key)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className={styles.value}>{value}</div>
-                  )}
-
-                  <div className={styles.controls}>
-                    {!isEditing && (
-                      <button
-                        className={styles.editBtn}
-                        onClick={() => handleEdit(key)}
-                      >
-                        Edit
-                      </button>
+                    ) : (
+                      <div className={styles.value}>{value}</div>
                     )}
+
+                    <div className={styles.controls}>
+                      {!isEditing && (
+                        <button
+                          className={styles.editBtn}
+                          onClick={() => handleEdit(key)}
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

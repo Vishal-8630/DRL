@@ -1,0 +1,21 @@
+@use '../../styles/globals' as *;
+
+.formSection {
+    background: rgba(83, 79, 37, 0.9);
+    box-shadow: 6px 6px 10px rgba(0, 0, 0, 0.7);
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    border: 5px solid rgba(0, 0, 0, 0.4);
+    margin: 1.5rem;
+}
+
+.sectionTitle {
+  text-align: center;
+  font-size: 1.6rem;
+  letter-spacing: 0.5px;
+  margin-bottom: 1rem;
+  font-family: $font-heading;
+  text-shadow: 2px 2px 2px black;
+  border-bottom: 1px solid $neutral-light;
+  padding-bottom: 1rem;
+}

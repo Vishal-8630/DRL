@@ -66,25 +66,15 @@ const BillInvoice: React.FC<BillInvoiceProps> = ({ entry }) => {
   return (
     <div className={styles.billInvoiceContainer}>
       <div className={styles.header}>
-        <div className={styles.firstRow}>
-          <div className={styles.logo}>
-            <img src={Logo} alt="Logo" />
-          </div>
-        </div>
         <div className={styles.secondRow}>
           <p className={styles.drl}>Divyanshi Road Lines</p>
-          <p>FLEET OWNER & TRANSPORT CONTRACTORS & COMMISION AGENT</p>
           <p>
             Head Office: Yamuna Vihar, Near Essar Fuel Pump, Lohvan Bhagichi,
             Laxmi Nagar, Mathura - 281001
           </p>
-          <p>
-            Branch Office: Sunari Aparna Pream, Near Kuber Jee Dharam Kanta,
-            Shashtripuram, Agra - 281305
-          </p>
           <p>Mob:- 8630836045, 7983635608, 8449991690</p>
-          <p>Email - drldivyashi@gmail.com</p>
           <p>GST NO - 09FPZPM8447C1Z1</p>
+          <p>Email - drldivyashi@gmail.com</p>
         </div>
       </div>
       <div className={styles.section_1}>
@@ -222,6 +212,8 @@ const BillInvoice: React.FC<BillInvoiceProps> = ({ entry }) => {
               goods supplied by us during the Financial Year 2023-24 under
               forwar charge.
             </li>
+            <li>We are registered into MSME. No: UDYAM-52-0019725</li>
+            <li>All the disputes are subject to Agra Jurisdiction.</li>
           </ol>
         </div>
         <div>

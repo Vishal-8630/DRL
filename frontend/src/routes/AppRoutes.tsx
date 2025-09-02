@@ -10,52 +10,32 @@ import Bill from "../pages/Bill";
 import BillingParty from "../pages/BillingParty";
 import NotFound from "../pages/NotFound";
 
+const protectedRoutes = [
+  { path: "/profile", element: <Profile /> },
+  { path: "/new-entry", element: <Entry /> },
+  { path: "/lrcopy", element: <LRCopy /> },
+  { path: "/bill", element: <Bill /> },
+  { path: "/billing-party", element: <BillingParty /> },
+];
+
 const AppRoutes = () => {
   return (
     <Routes>
+      {/* Public Routes */}
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/new-entry"
-        element={
-          <ProtectedRoute>
-            <Entry />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/lrcopy"
-        element={
-          <ProtectedRoute>
-            <LRCopy />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/bill"
-        element={
-          <ProtectedRoute>
-            <Bill />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/billing-party"
-        element={
-          <ProtectedRoute>
-            <BillingParty />
-          </ProtectedRoute>
-        }
-      />
+
+      {/* Protected Routes */}
+      {protectedRoutes.map(({ path, element }) => (
+        <Route
+          key={path}
+          path={path}
+          element={<ProtectedRoute>{element}</ProtectedRoute>}
+        />
+      ))}
+
+      {/* Catch-all */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

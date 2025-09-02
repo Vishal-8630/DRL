@@ -1,34 +1,50 @@
-import { useSelector } from "react-redux";
+import { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { motion, type Variants, AnimatePresence } from "framer-motion";
+
 import styles from "./MessageBar.module.scss";
-import { useDispatch } from "react-redux";
 import type { RootState } from "../../app/store";
 import { removeMessage } from "../../features/message";
-import { useEffect } from "react";
+
+// Animation variants
+const messageVariants: Variants = {
+  hidden: { opacity: 0, x: 30 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+  exit: { opacity: 0, x: -30, transition: { duration: 0.3 } },
+};
 
 const MessageBar = () => {
-    const messages = useSelector((state: RootState) => state.messages);
-    const dispatch = useDispatch();
+  const messages = useSelector((state: RootState) => state.messages);
+  const dispatch = useDispatch();
 
-    useEffect(() => {
-        const timers = messages.map(msg => 
-            setTimeout(() => {
-                dispatch(removeMessage(msg.id));
-            }, 2000)
-        );
-        return () => timers.forEach(timer => clearTimeout(timer));
-    }, [messages, dispatch])
+  // Auto-remove messages after 2s
+  useEffect(() => {
+    const timers = messages.map((msg) =>
+      setTimeout(() => dispatch(removeMessage(msg.id)), 2000)
+    );
+    return () => timers.forEach(clearTimeout);
+  }, [messages, dispatch]);
 
   return (
-    <div>
-      <div className={styles.messageContainer}>
+    <motion.div className={styles.messageContainer}>
+      <AnimatePresence>
         {messages.map((msg) => (
-          <div key={msg.id} className={`${styles.message} ${styles[msg.type]}`}>
+          <motion.div
+            key={msg.id}
+            layout
+            className={`${styles.message} ${styles[msg.type]}`}
+            variants={messageVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ layout: { duration: 0.3, ease: "easeInOut" } }}
+          >
             <span>{msg.text}</span>
             <button onClick={() => dispatch(removeMessage(msg.id))}>✖</button>
-          </div>
+          </motion.div>
         ))}
-      </div>
-    </div>
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

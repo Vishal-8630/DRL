@@ -20,13 +20,12 @@
   }
 
   thead {
-    background-color: $secondary-bg;
+    background-color: $brand-color;
 
     th {
       font-weight: 600;
       text-align: center;
       color: $neutral-light;
-      border-radius: $radius-md;
     }
   }
 

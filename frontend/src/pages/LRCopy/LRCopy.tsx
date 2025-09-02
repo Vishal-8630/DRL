@@ -27,8 +27,8 @@ const LRCopy = () => {
     documentTitle: "Invoice",
     pageStyle: `
       @page {
-        size: A4;
-        margin: 10mm;
+        size: A4 landscape;
+        margin: 5mm;
       }
       body {
         -webkit-print-color-adjust: exact;
@@ -116,7 +116,6 @@ const LRCopy = () => {
       );
       return;
     }
-
     handlePrint();
   };
 
@@ -144,7 +143,7 @@ const LRCopy = () => {
           </button>
         </div>
       </div>
-      <div ref={invoiceRef}>
+      <div ref={invoiceRef} className={styles.invoiceContainer}>
         <Invoice entry={entry!!} />
       </div>
       <div className={styles.controls}>

@@ -1,5 +1,5 @@
 import React from "react";
-import { ENTRY_LABELS, EXTRA_CHARGE_LABELS, type EntryType, type ExtraCharge } from "../../types/entry";
+import { ENTRY_LABELS, type EntryType } from "../../types/entry";
 import styles from "./TableView.module.scss";
 import EntryRow from "../EntryRow";
 import { PARTY_LABELS, type BillingPartyType } from "../../types/party";

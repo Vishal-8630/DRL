@@ -32,7 +32,7 @@ const Bill = () => {
     pageStyle: `
       @page {
         size: A4;
-        margin: 10mm;
+        margin: 5mm;
       }
       body {
         -webkit-print-color-adjust: exact;

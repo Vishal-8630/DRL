@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Poppins:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&family=Story+Script&display=swap');
 
 /* ----------------------------- */
 /* Colors                        */
@@ -13,6 +14,7 @@ $neutral-dark: #111827;   // Dark text
 $hover-color: $secondary; // Default hover color
 $disabled-bg: #F3F4F6;
 $disabled-border: #D1D5DB;
+$brand-color: rgba(83, 79, 37, 0.9);
 
 /* Feedback colors (muted versions) */
 $error-color: #F87171;       // Muted red
@@ -42,8 +44,8 @@ $radius-md: 8px;
 /* Breakpoints / Media Queries   */
 /* ----------------------------- */
 $breakpoint-sm: 576px;
-$breakpoint-md: 768px;
-$breakpoint-lg: 992px;
+$breakpoint-md: 1000px;
+$breakpoint-lg: 1100px;
 $breakpoint-xl: 1200px;
 
 /* ----------------------------- */

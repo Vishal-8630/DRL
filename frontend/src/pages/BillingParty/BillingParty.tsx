@@ -9,6 +9,10 @@ import type { BillingPartyType } from "../../types/party";
 import { partyFailure, partyStart, partySuccess } from "../../features/party";
 import api from "../../api/axios";
 import { addMessage } from "../../features/message";
+import { fadeInUp, staggerContainer } from "../../animations/animations";
+import { AnimatePresence, motion, useAnimation } from "framer-motion";
+import { useLocation } from "react-router-dom";
+import Button from "../../components/Button";
 
 /* -------------------- Constants -------------------- */
 export const TABS = {
@@ -20,16 +24,20 @@ type ActiveTab = (typeof TABS)[keyof typeof TABS];
 
 /* -------------------- Types -------------------- */
 type PartyState = {
-  localParty: BillingPartyType;              // Local copy of party
-  drafts: Partial<BillingPartyType>;         // Draft values while editing
-  editing: Set<keyof BillingPartyType>;      // Currently editing fields
-  isOpen: boolean;                           // Expand/collapse flag
+  localParty: BillingPartyType; // Local copy of party
+  drafts: Partial<BillingPartyType>; // Draft values while editing
+  editing: Set<keyof BillingPartyType>; // Currently editing fields
+  isOpen: boolean; // Expand/collapse flag
 };
 
 const BillingParty = () => {
   /* -------------------- Redux -------------------- */
   const loading = useSelector(selectPartyLoading);
   const dispatch = useDispatch();
+
+  /* -------------------- Animation and Location -------------------- */
+  const controls = useAnimation();
+  const location = useLocation();
 
   /* -------------------- Local State -------------------- */
   const [activeTab, setActiveTab] = useState<ActiveTab>(TABS.LIST);
@@ -46,7 +54,9 @@ const BillingParty = () => {
   const [parties, setParties] = useState<BillingPartyType[]>([]);
 
   // State management for each Party component
-  const [partyStates, setPartyStates] = useState<Record<string, PartyState>>({});
+  const [partyStates, setPartyStates] = useState<Record<string, PartyState>>(
+    {}
+  );
 
   /* -------------------- Effects -------------------- */
 
@@ -117,10 +127,7 @@ const BillingParty = () => {
   /* -------------------- Handlers: Party State Management -------------------- */
 
   // Update full party state
-  const updatePartyState = (
-    partyId: string,
-    newState: Partial<PartyState>
-  ) => {
+  const updatePartyState = (partyId: string, newState: Partial<PartyState>) => {
     setPartyStates((prev) => ({
       ...prev,
       [partyId]: { ...prev[partyId], ...newState },
@@ -177,8 +184,16 @@ const BillingParty = () => {
     <div className={styles.partyContainer}>
       {/* Tab Switcher */}
       <div className={styles.buttonGroup}>
-        <button onClick={() => setActiveTab(TABS.FORM)}>Add Billing Party</button>
-        <button onClick={() => setActiveTab(TABS.LIST)}>View Billing Parties</button>
+        <Button
+          text="Add Billing Party"
+          variant="primary"
+          onClick={() => setActiveTab(TABS.FORM)}
+        />
+        <Button
+          text="View Billing Parties"
+          variant="primary"
+          onClick={() => setActiveTab(TABS.LIST)}
+        />
       </div>
 
       {/* Frame Container */}
@@ -194,19 +209,29 @@ const BillingParty = () => {
         )}
 
         {/* Party List */}
-        {activeTab === TABS.LIST &&
-          parties.map((p) => (
-            <Party
-              key={p._id}
-              party={p}
-              partyState={partyStates[p._id]}
-              updatePartyState={updatePartyState}
-              updateDraft={updateDraft}
-              toggleEditing={toggleEditing}
-              toggleOpen={toggleOpen}
-              updateOriginalParty={updateOriginalParty}
-            />
-          ))}
+        {activeTab === TABS.LIST && (
+          <motion.div
+            key="list"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+          >
+            {parties.map((p) => (
+              <motion.div key={p._id} variants={fadeInUp}>
+                <Party
+                  key={p._id}
+                  party={p}
+                  partyState={partyStates[p._id]}
+                  updatePartyState={updatePartyState}
+                  updateDraft={updateDraft}
+                  toggleEditing={toggleEditing}
+                  toggleOpen={toggleOpen}
+                  updateOriginalParty={updateOriginalParty}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
     </div>
   );
