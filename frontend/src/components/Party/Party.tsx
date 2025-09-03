@@ -91,7 +91,7 @@ const Party: React.FC<PartyProps> = ({
   const handleSaveChanges = async () => {
     dispatch(partyStart());
     try {
-      await api.post(`/party/update-party/${party._id}`, partyState.localParty);
+      await api.post(`/billing-party/update-billing-party/${party._id}`, partyState.localParty);
       dispatch(addMessage({ type: "success", text: "Entry Updated" }));
       dispatch(partySuccess());
       updateOriginalParty(partyState.localParty);

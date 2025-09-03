@@ -13,6 +13,7 @@ import BillInvoice from "../../components/BillInvoice";
 import { useSelector } from "react-redux";
 import { selectEntryLoading } from "../../features/entry/entrySelectors";
 import Loading from "../../components/Loading";
+import { motion } from "framer-motion";
 
 const Bill = () => {
   const [search, setSearch] = useState("");
@@ -49,7 +50,7 @@ const Bill = () => {
 
     dispatch(entryStart());
     try {
-      const response = await api.get(`/entry/?bill_no=${search}`);
+      const response = await api.get(`/billing-entry/?bill_no=${search}`);
       const obj = response.data;
       setEntry(obj.data[0]);
       dispatch(entrySuccess());
@@ -125,7 +126,7 @@ const Bill = () => {
     handlePrint();
   };
 
-  if (loading) return <Loading />
+  if (loading) return <Loading />;
 
   return (
     <div className={styles.billContainer}>
@@ -146,9 +147,15 @@ const Bill = () => {
               <FaTimes size={20} onClick={handleSearchClear} />
             </div>
           )}
-          <button className={styles.searchBtn} onClick={handleSearch}>
+          <motion.button
+            className={styles.searchBtn}
+            onClick={handleSearch}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
             Search
-          </button>
+          </motion.button>
         </div>
       </div>
       <div ref={billRef} className={styles.billInvoice}>

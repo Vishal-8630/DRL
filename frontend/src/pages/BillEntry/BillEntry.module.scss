@@ -1,0 +1,27 @@
+.billEntryContainer {
+  padding: 2rem;
+
+  .links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    .link {
+      padding: 0.5rem 1rem;
+      border: 1px solid #333;
+      border-radius: 5px;
+      text-decoration: none;
+      color: #333;
+
+      &.activeLink {
+        background-color: #333;
+        color: white;
+      }
+    }
+  }
+
+  .outlet {
+    border-top: 1px solid #ccc;
+  }
+}

@@ -64,16 +64,11 @@
     color: white;
     cursor: pointer;
     border-radius: 4px;
-    @include transition();
     letter-spacing: 0.3px;
+    transition: background-color 0.3s ease-in-out;
 
     &:hover {
         background-color: lighten(rgb(43, 43, 43), 10%);
-    }
-
-    &:active {
-
-        transform: scale(0.6);
     }
 }
 

@@ -13,7 +13,7 @@
 
 body {
   font-family: $font-body;
-  background-color: $neutral-light;
+  background-color: rgba(248, 248, 248, 0.3);
   color: $neutral-dark;
   min-width: 540px;
 }
@@ -50,6 +50,12 @@ input, textarea {
     background-color: $disabled-bg;
     border: 1px solid $disabled-border;
   }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .errorText {

@@ -13,22 +13,30 @@ import type { RootState } from "../../app/store";
 import type { EntryType } from "../../types/entry";
 import type { BillingPartyType } from "../../types/party";
 
-import styles from "./NewEntry.module.scss";
+import styles from "./NewBillingEntry.module.scss";
 import FormInput from "../../components/FormInput";
 import FormSection from "../../components/FormSection";
 
 /** -------------------- Form Sections Constants -------------------- **/
-const BILL_INFO_INPUTS = [
+interface InputType {
+  type: string;
+  label: string;
+  name: string;
+  options?: string[];
+}
+
+const BILL_INFO_INPUTS: InputType[] = [
   { type: "number", label: "Bill No.", name: "bill_no" },
   { type: "date", label: "Bill Date", name: "bill_date" },
+  { type: "select", label: "Billing Party", name: "billing_party" },
 ];
 
-const LR_INFO_INPUTS = [
+const LR_INFO_INPUTS: InputType[] = [
   { type: "number", label: "LR No.", name: "lr_no" },
   { type: "date", label: "LR Date", name: "lr_date" },
 ];
 
-const CONSIGNOR_INPUTS = [
+const CONSIGNOR_INPUTS: InputType[] = [
   { type: "input", label: "Consignor Name", name: "consignor_name" },
   {
     type: "textarea",
@@ -38,7 +46,7 @@ const CONSIGNOR_INPUTS = [
   { type: "textarea", label: "Consignor GST No.", name: "consignor_gst_no" },
 ];
 
-const CONSIGNEE_INPUTS = [
+const CONSIGNEE_INPUTS: InputType[] = [
   { type: "input", label: "Consignee Name", name: "consignee" },
   {
     type: "textarea",
@@ -48,7 +56,7 @@ const CONSIGNEE_INPUTS = [
   { type: "input", label: "Consignee GST No.", name: "consignee_gst_no" },
 ];
 
-const VEHICLE_PACKAGE_INPUTS = [
+const VEHICLE_PACKAGE_INPUTS: InputType[] = [
   { type: "input", label: "Package", name: "pkg" },
   { type: "input", label: "Vehicle No.", name: "vehicle_no" },
   { type: "textarea", label: "From", name: "from" },
@@ -62,7 +70,7 @@ const VEHICLE_PACKAGE_INPUTS = [
   { type: "input", label: "Mode of Packing", name: "mode_of_packing" },
 ];
 
-const INVOICE_INPUTS = [
+const INVOICE_INPUTS: InputType[] = [
   { type: "input", label: "Invoice No.", name: "invoice_no" },
   { type: "input", label: "Eway Bill No.", name: "eway_bill_no" },
   {
@@ -74,13 +82,13 @@ const INVOICE_INPUTS = [
   { type: "input", label: "Value", name: "value" },
 ];
 
-const CLERK_YARD_INPUTS = [
+const CLERK_YARD_INPUTS: InputType[] = [
   { type: "input", label: "Name of Clerk", name: "name_of_clerk" },
   { type: "input", label: "Empty Yard Name", name: "empty_yard_name" },
   { type: "textarea", label: "Remark If Any", name: "remark_if_any" },
 ];
 
-const BILLING_HIRE_INPUTS = [
+const BILLING_HIRE_INPUTS: InputType[] = [
   { type: "input", label: "To Be Billed At", name: "to_be_billed_at" },
   { type: "number", label: "Hire Amount", name: "hire_amount" },
   { type: "input", label: "Risk", name: "risk" },
@@ -93,7 +101,8 @@ const BILLING_HIRE_INPUTS = [
   { type: "number", label: "Advance", name: "advance" },
 ];
 
-const TAX_TOTAL_INPUTS = [
+const TAX_TOTAL_INPUTS: InputType[] = [
+  { type: "select", label: "State", name: "state" },
   { type: "number", label: "Sub Total", name: "sub_total" },
   { type: "number", label: "CGST", name: "cgst" },
   { type: "number", label: "SGST", name: "sgst" },
@@ -175,7 +184,7 @@ const Entry: React.FC = () => {
     const fetchAllParties = async () => {
       dispatch(partyStart());
       try {
-        const response = await api.get("/party/all-parties");
+        const response = await api.get("/billing-party/all-billing-parties");
         setParties(response.data.data);
         dispatch(partySuccess());
       } catch (error: any) {
@@ -218,13 +227,37 @@ const Entry: React.FC = () => {
 
   /** -------------------- Handlers -------------------- **/
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
+
     if (errorsRef.current[name]) {
       errorsRef.current[name] = "";
       setErrors({ ...errorsRef.current });
     }
+
+    if (name === "billing_party") {
+      if (value === "") {
+        console.log(value);
+        const emptyParty = { _id: "", name: "", address: "", gst_no: "" };
+        setSelectedParty(emptyParty);
+        setEntry((prev) => ({ ...prev, billing_party: emptyParty }));
+      } else {
+        const party = parties.find((p) => p.name === value)!;
+        setSelectedParty(party);
+        setEntry((prev) => ({ ...prev, billing_party: party }));
+      }
+      setPartyError("");
+      return;
+    }
+
+    if (name === "state") {
+      setState(value);
+      return;
+    }
+
     setEntry((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -258,20 +291,6 @@ const Entry: React.FC = () => {
     }));
   };
 
-  const handleSelectedParty = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    if (value === "none")
-      return setSelectedParty({
-        _id: "",
-        name: "none",
-        address: "",
-        gst_no: "",
-      });
-    const party = parties.find((p) => p.name === value)!;
-    setSelectedParty(party);
-    setPartyError("");
-  };
-
   const partyValidation = () => {
     if (selectedParty.name === "none") {
       setPartyError("Please select a Billing Party");
@@ -295,7 +314,10 @@ const Entry: React.FC = () => {
     }
 
     try {
-      const response = await api.post("/entry/new-entry", entry);
+      const response = await api.post(
+        "/billing-entry/new-billing-entry",
+        entry
+      );
       dispatch(addMessage({ type: "success", text: response.data.message }));
       dispatch(entrySuccess());
       navigate("/");
@@ -319,20 +341,42 @@ const Entry: React.FC = () => {
   };
 
   /** -------------------- Render Inputs -------------------- **/
-  const renderInputs = (inputs: typeof BILL_INFO_INPUTS) =>
-    inputs.map((input) => (
-      <FormInput
-        key={input.name}
-        type={input.type}
-        id={input.name}
-        label={input.label}
-        name={input.name}
-        value={String(entry[input.name as keyof EntryType] || "")}
-        placeholder={input.label}
-        error={errorsRef.current[input.name]}
-        onChange={handleChange}
-      />
-    ));
+  const renderInputs = (inputs: InputType[]) => {
+    return inputs.map((input) => {
+      let options: string[] = input.options ? [...input.options] : [];
+      let error: string = errorsRef.current[input.name] || "";
+      let value: string = String(entry[input.name as keyof EntryType] || "");
+      let placeholder: string = input.label;
+
+      if (input.name === "billing_party") {
+        options = parties.map((party) => party.name);
+        error = partyError;
+        placeholder = "Select a Billing Party";
+        value = selectedParty.name;
+      }
+
+      if (input.name === "state") {
+        options = ["UP", "Not UP"];
+        value = state;
+        placeholder = "";
+      }
+
+      return (
+        <FormInput
+          key={input.name}
+          type={input.type}
+          id={input.name}
+          label={input.label}
+          name={input.name}
+          value={value}
+          placeholder={placeholder}
+          options={options}
+          error={error}
+          onChange={handleChange}
+        />
+      );
+    });
+  };
 
   /** -------------------- JSX -------------------- **/
   return (
@@ -342,23 +386,6 @@ const Entry: React.FC = () => {
           <FormSection title="Bill Information">
             {renderInputs(BILL_INFO_INPUTS)}
             <div className={styles.formGroup}>
-              <label>Billing Party Name</label>
-              <motion.select
-                value={selectedParty.name}
-                onChange={handleSelectedParty}
-                ref={partyRef}
-                whileHover={{ scale: 1.03 }}
-                transition={{ type: "spring", duration: 0.5 }}
-                style={{ marginBottom: "1rem" }}
-              >
-                <option value="none">Select Billing Party</option>
-                {parties.map((p) => (
-                  <option key={p._id} value={p.name}>
-                    {p.name}
-                  </option>
-                ))}
-              </motion.select>
-              {partyError && <p className={styles.errorText}>{partyError}</p>}
               <FormInput
                 type="textarea"
                 id="address"
@@ -437,19 +464,6 @@ const Entry: React.FC = () => {
           </FormSection>
 
           <FormSection title="Tax & Total">
-            <div className={styles.formGroup}>
-              <label>State</label>
-              <motion.select
-                name="state"
-                id="state"
-                onChange={(e) => setState(e.target.value)}
-                whileHover={{ scale: 1.03 }}
-                transition={{ type: "spring", duration: 0.5 }}
-              >
-                <option value="UP">UP</option>
-                <option value="Not-UP">Not-UP</option>
-              </motion.select>
-            </div>
             {renderInputs(TAX_TOTAL_INPUTS)}
           </FormSection>
         </div>

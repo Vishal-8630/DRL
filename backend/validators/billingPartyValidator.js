@@ -1,6 +1,6 @@
 import { body, validationResult } from 'express-validator';
 
-export const billingPartyValidation = [
+export const billingPartyValidations = [
     body("name")
         .notEmpty().withMessage("Billing Party Name is required"),
     body("address")

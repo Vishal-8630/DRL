@@ -1,6 +1,6 @@
 import { body, validationResult } from 'express-validator';
 
-export const entryValidation = [
+export const billingEntryValidations = [
     body('bill_no')
         .notEmpty().withMessage('Bill Number is required'),
     body('bill_date')

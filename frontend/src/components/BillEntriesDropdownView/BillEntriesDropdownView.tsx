@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import styles from "./DropdownView.module.scss";
+import styles from "./BillEntriesDropdownView.module.scss";
 import {
   ENTRY_LABELS,
   EXTRA_CHARGE_LABELS,
@@ -180,7 +180,7 @@ const ExtraChargeRow: React.FC<ExtraChargeRowProps> = ({
 );
 
 // --- Main DropdownView ---
-const DropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate }) => {
+const BillEntriesDropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate }) => {
   const [localEntry, setLocalEntry] = useState(entry);
   const [isOpen, setIsOpen] = useState(false);
   const [editing, setEditing] = useState<{
@@ -366,7 +366,7 @@ const DropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate }) => {
     dispatch(entryStart());
     try {
       const response = await api.post(
-        `/entry/update-entry/${entry._id}`,
+        `/billing-entry/update-billing-entry/${entry._id}`,
         localEntry
       );
       const obj = response.data;
@@ -393,9 +393,9 @@ const DropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate }) => {
     <div className={styles.container}>
       <button className={styles.header} onClick={() => setIsOpen((s) => !s)}>
         <div className={styles.title}>
-          <span className={styles.headingLabel}>Vehicle No</span>
+          <span className={styles.headingLabel}>Bill Number: </span>
           <span className={styles.headingValue}>
-            {localEntry.vehicle_no || "—"}
+            {localEntry.bill_no || "—"}
           </span>
         </div>
         <motion.span
@@ -517,4 +517,4 @@ const DropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate }) => {
   );
 };
 
-export default DropdownView;
+export default BillEntriesDropdownView;

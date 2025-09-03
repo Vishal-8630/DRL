@@ -10,6 +10,7 @@ import { addMessage } from "../../features/message";
 import { useReactToPrint } from "react-to-print";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { motion } from "framer-motion";
 
 const LRCopy = () => {
   const [search, setSearch] = useState("");
@@ -44,7 +45,7 @@ const LRCopy = () => {
     }
     dispatch(entryStart());
     try {
-      const response = await api.get(`/entry/?lr_no=${search}`);
+      const response = await api.get(`/billing-entry/?lr_no=${search}`);
       const obj = response.data;
       setEntry(obj.data[0]);
       dispatch(entrySuccess());
@@ -138,9 +139,15 @@ const LRCopy = () => {
               <FaTimes size={20} onClick={handleSearchClear} />
             </div>
           )}
-          <button className={styles.searchBtn} onClick={handleSearch}>
+          <motion.button
+            className={styles.searchBtn}
+            onClick={handleSearch}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
             Search
-          </button>
+          </motion.button>
         </div>
       </div>
       <div ref={invoiceRef} className={styles.invoiceContainer}>

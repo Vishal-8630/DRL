@@ -9,11 +9,14 @@ interface FormInputProps {
   id: string;
   name: string;
   value: string;
-  placeholder: string;
+  placeholder?: string;
+  options?: string[];
   error?: string;
   icon?: React.ReactNode;
   onChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => void;
 }
 
@@ -26,6 +29,7 @@ const FormInput: React.FC<FormInputProps> = ({
   placeholder,
   error,
   icon,
+  options = [],
   onChange,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -33,6 +37,8 @@ const FormInput: React.FC<FormInputProps> = ({
 
   const isPassword = type === "password";
   const isTextarea = type === "textarea";
+  const isSelect = type === "select";
+  const hasIcon = !!icon;
 
   const handleFocus = () => setIsFocused(true);
   const handleBlur = () => setIsFocused(false);
@@ -49,7 +55,23 @@ const FormInput: React.FC<FormInputProps> = ({
       >
         {icon && <span className={styles.icon}>{icon}</span>}
 
-        {isTextarea ? (
+        {isSelect ? (
+          <select
+            id={id}
+            name={name}
+            value={value}
+            onChange={onChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+          >
+            {placeholder && <option value="">{placeholder}</option>}
+            {options.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        ) : isTextarea ? (
           <textarea
             id={id}
             name={name}
@@ -69,6 +91,7 @@ const FormInput: React.FC<FormInputProps> = ({
             onChange={onChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            className={hasIcon ? `${styles.withIcon}` : ""}
           />
         )}
 

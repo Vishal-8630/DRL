@@ -1,6 +1,6 @@
 import React from "react";
 import { ENTRY_LABELS, type EntryType } from "../../types/entry";
-import styles from "./TableView.module.scss";
+import styles from "./BillEntriesTableView.module.scss";
 import EntryRow from "../EntryRow";
 import { PARTY_LABELS, type BillingPartyType } from "../../types/party";
 
@@ -8,7 +8,7 @@ interface TableViewProps {
   entries: EntryType[];
 }
 
-const TableView: React.FC<TableViewProps> = ({ entries }) => {
+const BillEntriesTableView: React.FC<TableViewProps> = ({ entries }) => {
   return (
     <div className={styles.tableWrapper}>
       <table className={styles.table}>
@@ -40,4 +40,4 @@ const TableView: React.FC<TableViewProps> = ({ entries }) => {
   );
 };
 
-export default TableView;
+export default BillEntriesTableView;

@@ -10,8 +10,7 @@ import { partyFailure, partyStart, partySuccess } from "../../features/party";
 import api from "../../api/axios";
 import { addMessage } from "../../features/message";
 import { fadeInUp, staggerContainer } from "../../animations/animations";
-import { AnimatePresence, motion, useAnimation } from "framer-motion";
-import { useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import Button from "../../components/Button";
 
 /* -------------------- Constants -------------------- */
@@ -34,10 +33,6 @@ const BillingParty = () => {
   /* -------------------- Redux -------------------- */
   const loading = useSelector(selectPartyLoading);
   const dispatch = useDispatch();
-
-  /* -------------------- Animation and Location -------------------- */
-  const controls = useAnimation();
-  const location = useLocation();
 
   /* -------------------- Local State -------------------- */
   const [activeTab, setActiveTab] = useState<ActiveTab>(TABS.LIST);
@@ -64,7 +59,7 @@ const BillingParty = () => {
   useEffect(() => {
     const fetchAllParties = async () => {
       try {
-        const response = await api.get("/party/all-parties");
+        const response = await api.get("/billing-party/all-billing-parties");
         const data: BillingPartyType[] = response.data.data;
         setParties(data);
 
@@ -107,7 +102,7 @@ const BillingParty = () => {
     dispatch(partyStart());
 
     try {
-      const response = await api.post("/party/add-party", party);
+      const response = await api.post("/billing-party/new-billing-party", party);
 
       // Success message
       dispatch(addMessage({ type: "success", text: response.data.message }));

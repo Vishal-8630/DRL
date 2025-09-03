@@ -62,10 +62,8 @@ const Navbar = () => {
     { to: "/", label: "Home" },
     ...(user
       ? [
-          { to: "/new-entry", label: "New Entry" },
-          { to: "/billing-party", label: "Billing Party" },
-          { to: "/lrcopy", label: "LR Copy" },
-          { to: "/bill", label: "Bill" },
+          { to: "/bill-entry", label: "Bill Entry" },
+          { to: "/vehicle-entry", label: "Vehicle Entry" },
           { to: "/profile", label: "Profile" },
           { to: "/logout", label: "Logout", onClick: handleLogout },
         ]
@@ -77,7 +75,12 @@ const Navbar = () => {
 
   const renderLink = (link: (typeof links)[number]) => {
     const isLogout = link.to === "/logout";
-    const isActive = activePath === link.to;
+    const isActive =
+      link.to === "/bill-entry"
+        ? activePath.startsWith("/bill-entry")
+        : link.to === "/vehicle-entry"
+        ? activePath.startsWith("/vehicle-entry")
+        : activePath === link.to;
 
     return (
       <motion.li

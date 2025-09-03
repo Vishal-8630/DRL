@@ -1,11 +1,19 @@
-import express from 'express';
-import { addBillingParty, getAllParties, updateParty } from '../controllers/billingPartyController.js';
-import { billingPartyValidation } from '../validators/billingPartyValidator.js';
+import express from "express";
+import {
+  newBillingParty,
+  getAllBillingParties,
+  updateBillingParty,
+} from "../controllers/billingPartyController.js";
+import { billingPartyValidations } from "../validators/billingPartyValidator.js";
 
 const router = express.Router();
 
-router.post('/add-party', billingPartyValidation, addBillingParty);
-router.get("/all-parties", getAllParties);
-router.post("/update-party/:id", billingPartyValidation, updateParty);
+router.post("/new-billing-party", billingPartyValidations, newBillingParty);
+router.get("/all-billing-parties", getAllBillingParties);
+router.post(
+  "/update-billing-party/:id",
+  billingPartyValidations,
+  updateBillingParty
+);
 
 export default router;

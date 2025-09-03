@@ -1,9 +1,9 @@
 import { successResponse } from '../utils/response.js';
-import Entry from '../models/entryModel.js';
+import Entry from '../models/billingEntryModel.js';
 import AppError from '../utils/appError.js';
 import mongoose from 'mongoose';
 
-const addNewEntry = async (req, res, next) => {
+const addNewBillingEntry = async (req, res, next) => {
     const { extra_charges, billing_party, _id, ...rest } = req.body;
     const charges = [];
 
@@ -36,13 +36,13 @@ const addNewEntry = async (req, res, next) => {
     return successResponse(res, "Entry Added Successfully");
 }
 
-const getAllEntries = async (req, res) => {
+const getAllBillingEntries = async (req, res) => {
     const entries = await Entry.find().populate("billing_party");
 
     return successResponse(res, "", entries);
 }
 
-const updateEntry = async (req, res, next) => {
+const updateBillingEntry = async (req, res, next) => {
     const entryId = req.params.id;
     const updatedEntry = req.body;
 
@@ -73,7 +73,7 @@ const updateEntry = async (req, res, next) => {
     return successResponse(res, "Entry Updated Successfully", entry);
 }
 
-const searchEntryByParam = async (req, res, next) => {
+const searchBillingEntryByParam = async (req, res, next) => {
     const query = {};
 
     for (const [key, value] of Object.entries(req.query)) {
@@ -94,7 +94,7 @@ const searchEntryByParam = async (req, res, next) => {
     return successResponse(res, "", entries);
 }
 
-const findEntryById = async (req, res, next) => {
+const findBillingEntryById = async (req, res, next) => {
     const lrNumber = req.params.id;
 
     if (lrNumber.length < 0) {
@@ -110,4 +110,4 @@ const findEntryById = async (req, res, next) => {
     return successResponse(res, "", entry);
 }
 
-export { addNewEntry, getAllEntries, updateEntry, searchEntryByParam, findEntryById }
+export { addNewBillingEntry, getAllBillingEntries, updateBillingEntry, searchBillingEntryByParam, findBillingEntryById }
