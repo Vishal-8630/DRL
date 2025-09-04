@@ -14,6 +14,12 @@
     }
   }
 
+  @else if $breakpoint ==md1 {
+    @media (max-width: $breakpoint-md1) {
+      @content;
+    }
+  }
+
   @else if $breakpoint ==md {
     @media (max-width: $breakpoint-md) {
       @content;

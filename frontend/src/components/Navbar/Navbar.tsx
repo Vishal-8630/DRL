@@ -1,45 +1,40 @@
 import styles from "./Navbar.module.scss";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { type AppDispatch, type RootState } from "../../app/store";
 import api from "../../api/axios";
 import { logout } from "../../features/auth";
 import { addMessage } from "../../features/message";
 import { useEffect, useState } from "react";
-import { motion, type Variants } from "framer-motion";
-import { staggerContainer } from "../../animations/animations";
-import Logo from "../../assets/logo.png";
-
-// Framer Motion Variants
-const linkVariants: Variants = {
-  hidden: { opacity: 0, x: 100 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { type: "spring", stiffness: 300, damping: 20 },
-  },
-};
-
-const underlineVariants: Variants = {
-  rest: { scaleX: 0 },
-  hover: {
-    scaleX: 1,
-    transition: {
-      duration: 0.3,
-      type: "spring",
-      stiffness: 400,
-      damping: 30,
-      mass: 0.3,
-    },
-  },
-};
+import { AnimatePresence, motion } from "framer-motion";
+import NavButton from "../NavButton/NavButton";
+import { FaChevronDown } from "react-icons/fa";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const location = useLocation();
   const user = useSelector((state: RootState) => state.auth.user);
-  const [activePath, setActivePath] = useState(location.pathname);
+  const [show, setShow] = useState(true);
+  const [lastScroll, setLastScroll] = useState(0);
+  const [isNavOpen, setIsNavOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 750);
+    handleResize(); // initial check
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScroll = window.scrollY;
+      setShow(currentScroll < lastScroll || currentScroll < 50);
+      setLastScroll(currentScroll);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScroll]);
 
   const handleLogout = async () => {
     try {
@@ -54,16 +49,76 @@ const Navbar = () => {
     }
   };
 
-  useEffect(() => {
-    setActivePath(location.pathname);
-  }, [location.pathname]);
-
   const links = [
     { to: "/", label: "Home" },
     ...(user
       ? [
-          { to: "/bill-entry", label: "Bill Entry" },
-          { to: "/vehicle-entry", label: "Vehicle Entry" },
+          {
+            label: "Bill Entry",
+            icon: <FaChevronDown />,
+            subLinks: [
+              {
+                to: "/bill-entry/new-entry",
+                label: "New Bill Entry",
+                content:
+                  "Click here to create new Billing Entry. Lorem ipsum dolor sit amet consectetur adipisicing elit. Et, tenetur quae quod voluptate illum fuga ducimus eum. Molestiae deleniti vitae sit quo iusto!",
+              },
+              {
+                to: "/bill-entry/all-bill-entries",
+                label: "All Bill Entries",
+                content:
+                  "Click here to view all Billing Entries. Lorem ipsum dolor sit amet consectetur adipisicing elit. Et, tenetur quae quod.",
+              },
+              {
+                to: "/bill-entry/lrcopy",
+                label: "LR Copy",
+                content: "Click here to generate LR Copy",
+              },
+              {
+                to: "/bill-entry/bill",
+                label: "Bill",
+                content: "Click here to generate Bill",
+              },
+              {
+                to: "/bill-entry/billing-party",
+                label: "Billing Party",
+                content:
+                  "Click here to add Billing Party. Lorem ipsum dolor sit amet consectetur adipisicing elit. Et, tenetur quae quod voluptate illum fuga ducimus eum. Molestiae deleniti vitae sit quo iusto!",
+              },
+            ],
+          },
+          {
+            label: "Vehicle Entry",
+            icon: <FaChevronDown />,
+            subLinks: [
+              {
+                to: "/vehicle-entry/new-entry",
+                label: "New Vehicle Entry",
+                content: "Click here to create new Vehicle Entry",
+              },
+              {
+                to: "/vehicle-entry/all-vehicle-entries",
+                label: "All Vehicle Entries",
+                content:
+                  "Click here to view all Vehicle Entries. Lorem ipsum dolor sit amet consectetur adipisicing elit. Et, tenetur quae quod voluptate illum fuga ducimus eum. Molestiae deleniti vitae sit quo iusto!",
+              },
+              {
+                to: "/vehicle-entry/new-balance-party",
+                label: "New Balance Party",
+                content: "Click here to create new Balance Party",
+              },
+              {
+                to: "/vehicle-entry/all-balance-parties",
+                label: "All Balance Parties",
+                content: "Click here to view all Balance Parties",
+              },
+              {
+                to: "/vehicle-entry/party-balance",
+                label: "Party Balance",
+                content: "Click here to view Party Balance",
+              },
+            ],
+          },
           { to: "/profile", label: "Profile" },
           { to: "/logout", label: "Logout", onClick: handleLogout },
         ]
@@ -73,76 +128,57 @@ const Navbar = () => {
         ]),
   ];
 
-  const renderLink = (link: (typeof links)[number]) => {
-    const isLogout = link.to === "/logout";
-    const isActive =
-      link.to === "/bill-entry"
-        ? activePath.startsWith("/bill-entry")
-        : link.to === "/vehicle-entry"
-        ? activePath.startsWith("/vehicle-entry")
-        : activePath === link.to;
-
-    return (
-      <motion.li
-        key={link.to}
-        className={`${
-          isLogout ? styles.logoutButton + " " + styles.navlink : ""
-        } ${isActive ? styles.activeLink : ""}`}
-        variants={linkVariants}
-        initial="rest"
-        whileHover="hover"
-        animate={isActive ? "hover" : "rest"}
-        onClick={isLogout ? link.onClick : undefined}
-      >
-        {isLogout ? (
-          <>
-            {link.label}
-            <motion.span
-              className={styles.underline}
-              variants={underlineVariants}
-            />
-          </>
-        ) : (
-          <NavLink
-            to={link.to}
-            end
-            onClick={() => setActivePath(link.to)}
-            className={styles.navlink}
-          >
-            {link.label}
-            <motion.span
-              className={styles.underline}
-              variants={underlineVariants}
-            />
-          </NavLink>
-        )}
-      </motion.li>
-    );
-  };
-
   return (
-    <motion.nav
-      className={styles.navbar}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className={styles.brand}>
-        <div className={styles.logo_img}>
-          <img src={Logo} alt="Logo" />
-        </div>
-        <div className={styles.logo}>Divyanshi Road Lines</div>
-      </div>
-
-      <motion.ul
-        className={styles.links}
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
+    <div className={styles.navbar}>
+      <motion.nav
+        initial={{ opacity: 0, y: 0 }}
+        animate={{ opacity: show ? 1 : 0, y: show ? 0 : -120 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
       >
-        {links.map(renderLink)}
-      </motion.ul>
-    </motion.nav>
+        <div className={styles.brand}>
+          <div className={styles.drl}>DRL</div>
+        </div>
+
+        <AnimatePresence>
+          <motion.ul
+            className={styles.links}
+            variants={{
+              hidden: { opacity: isMobile ? 0 : 1, y: isMobile ? -500 : 0 },
+              visible: { opacity: 1, y: 0 },
+              exit: { opacity: isMobile ? 0 : 1, y: isMobile ? -500 : 0 },
+            }}
+            initial="hidden"
+            animate={isNavOpen ? "visible" : "hidden"}
+            exit="exit"
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+          >
+            {links.map((link) => (
+              <NavButton
+                key={link.label}
+                link={{
+                  ...link,
+                  icon: link.icon,
+                  onClick: link.onClick,
+                  setIsNavOpen: () => setIsNavOpen(false),
+                  subLinks: link.subLinks,
+                }}
+              />
+            ))}
+          </motion.ul>
+        </AnimatePresence>
+        <div className={styles.burger} onClick={() => setIsNavOpen(!isNavOpen)}>
+          <motion.span
+            animate={isNavOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
+          ></motion.span>
+          <motion.span
+            animate={isNavOpen ? { opacity: 0 } : { opacity: 1 }}
+          ></motion.span>
+          <motion.span
+            animate={isNavOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
+          ></motion.span>
+        </div>
+      </motion.nav>
+    </div>
   );
 };
 

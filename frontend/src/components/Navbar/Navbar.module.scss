@@ -1,16 +1,31 @@
 @use '../../styles/globals' as *;
 
 .navbar {
-    @include flex-between();
-    padding: 1rem 2rem;
-    height: 80px;
-    background-color: white;
-    @include text-color($neutral-dark);
-    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.7);
-    position: fixed;
-    top: 0;
-    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+    background-color: #1d1e22;
+    color: white;
+    position: fixed;
+    top: 10px;
+    width: 90%;
+    max-width: 1000px;
+    border-radius: 14px;
+    padding: 1rem 2rem;
+    z-index: 10000;
+
+    @include respond-to(lg) {
+        max-width: 900px;
+        padding: 1rem 1.5rem;
+    }
 }
 
 .brand {
@@ -22,7 +37,7 @@
         height: 55px;
     }
 
-    .logo_img {
+    .logo {
         @include flex-center();
 
         img {
@@ -31,16 +46,16 @@
         }
     }
 
-    .logo {
-        font-family: $font-heading;
-        color: $brand-color;
-        font-weight: 700;
-        font-size: 2rem;
-
-        @include respond-to(lg) {
-            font-size: 1.5rem;
-            ;
-        }
+    .drl {
+        font-size: 60px;
+        font-weight: bold;
+        color: #fff;
+        text-transform: uppercase;
+        font-family: Arial, sans-serif;
+        text-shadow:
+            2px 2px 0 #ff4d4d,
+            4px 4px 0 #ff9933,
+            6px 6px 0 #33cc33;
     }
 }
 
@@ -52,40 +67,86 @@
         gap: 0.6rem;
     }
 
+    @include respond-to(md1) {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        background-color: #1d1e22;
+        top: 110%;
+        left: 0;
+        width: 100%;
+        padding: 2rem;
+        border-radius: 14px;
+        align-items: flex-start;
+        z-index: 1000;
+    }
+
     li {
-        text-align: center;
+        @include flex-center();
         list-style: none;
         padding: 0.4rem 0.8rem;
         border-radius: 50px;
-        font-weight: 500;
         letter-spacing: 0.5px;
+        text-align: center;
+        cursor: pointer;
+        transition: color 0.3s ease-in-out;
+
+        @include respond-to(lg) {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.5rem;
+        }
+
+        @include respond-to(md1) {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        &:hover {
+            color: #a2a2a4;
+        }
+
+        div {
+            @include flex-center();
+            gap: 5px;
+
+            > :last-child {
+                font-size: 0.6rem;
+                display: flex;
+            }
+        }
     }
 }
 
 .logoutButton {
     cursor: pointer;
+    transition: color 0.3s ease-in-out;
+
+    &:hover {
+        color: #a2a2a4;
+    }
 }
 
-.activeLink {
-    color: black !important;
-    scale: 1.1;
-}
+.burger {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    display: none;
 
-.navlink {
-    position: relative;
-    display: inline-block;
-    padding-bottom: 5px;
-    text-decoration: none;
-    color: inherit;
-    margin-right: 5px;
-}
+    @include respond-to(md1) {
+        display: flex;
+    }
 
-.underline {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -2px;
-    height: 3px;
-    background: $brand-color;
-    transform-origin: left;
+    span {
+        display: inline-block;
+        height: 3px;
+        background-color: white;
+        width: 25px;
+        border-radius: 2px;
+
+        &:nth-child(2) {
+            width: 15px;
+            align-self: flex-end;
+        }
+    }
 }

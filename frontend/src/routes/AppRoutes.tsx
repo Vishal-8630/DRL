@@ -9,14 +9,13 @@ import LRCopy from "../pages/LRCopy";
 import Bill from "../pages/Bill";
 import BillingParty from "../pages/BillingParty";
 import NotFound from "../pages/NotFound";
-import BillEntry from "../pages/BillEntry";
-import VehicleEntry from "../pages/VehicleEntry";
 import NewVehicleEntry from "../pages/NewVehicleEntry";
 import VehicleEntries from "../pages/VehicleEntries";
 import NewBalanceParty from "../pages/NewBalanceParty";
 import BalanceParties from "../pages/BalanceParties";
 import PartyBalance from "../pages/PartyBalance";
 import BillEntries from "../pages/BillEntries";
+import PagesOutlet from "../pages/PagesOutlet";
 
 const billEntryRoutes = [
   { path: "new-entry", element: <NewBillingEntry /> },
@@ -51,10 +50,10 @@ const AppRoutes = () => {
       />
 
       <Route
-        path="/bill-entry"
+        path="/bill-entry/*"
         element={
           <ProtectedRoute>
-            <BillEntry />
+            <PagesOutlet />
           </ProtectedRoute>
         }
       >
@@ -65,10 +64,10 @@ const AppRoutes = () => {
       </Route>
 
       <Route
-        path="/vehicle-entry"
+        path="/vehicle-entry/*"
         element={
           <ProtectedRoute>
-            <VehicleEntry />
+            <PagesOutlet />
           </ProtectedRoute>
         }
       >
