@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { EmptyVehicleEntry, type VehicleEntryType } from "../../types/vehicle";
+import { useEffect, useState } from "react";
+import { type VehicleEntryType } from "../../types/vehicle";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { selectVehicleLoading } from "../../features/vehicle/vehicleSelectors";
@@ -9,7 +9,11 @@ import { motion } from "framer-motion";
 import { fadeInUp, staggerContainer } from "../../animations/animations";
 import VehicleEntryDropdown from "../../components/VehicleEntryDropdown";
 import { addMessage } from "../../features/message";
-import styles from './VehicleEntries.module.scss';
+import styles from "./VehicleEntries.module.scss";
+import { applyFilters } from "../../filters/applyFilers";
+import GenericFilter from "../../components/GenericFilter";
+import { vehicleEntryFilters } from "../../filters/vehicleEntryFilters";
+import { applyGenericFilters } from "../../filters/filerHelper";
 
 type VehicleState = {
   localVehicleEntry: VehicleEntryType;
@@ -26,6 +30,10 @@ const VehicleEntries = () => {
   const [vehicleStates, setVehicleStates] = useState<
     Record<string, VehicleState>
   >({});
+  const [filteredEntries, setFilteredEntries] = useState<VehicleEntryType[]>(
+    []
+  );
+  const [filters, setFilters] = useState<Record<string, any>>({});
 
   useEffect(() => {
     const fetchVehicleEntries = async () => {
@@ -46,12 +54,22 @@ const VehicleEntries = () => {
         });
         setVehicleStates(initialStates);
       } catch (error: any) {
-        dispatch(addMessage({ type: "error", text: error.response?.data?.mesage || "Failed to fetch vehicle entries" }));
+        dispatch(
+          addMessage({
+            type: "error",
+            text:
+              error.response?.data?.mesage || "Failed to fetch vehicle entries",
+          })
+        );
         console.error("Failed to fetch vehicle entries", error.response);
       }
     };
     fetchVehicleEntries();
   }, []);
+
+  useEffect(() => {
+    setFilteredEntries(vehicleEntries);
+  }, [vehicleEntries]);
 
   const updateVehicleState = (id: string, newState: Partial<VehicleState>) => {
     setVehicleStates((prevStates) => ({
@@ -80,7 +98,7 @@ const VehicleEntries = () => {
       if (editing.has(key)) editing.delete(key);
       else editing.add(key);
       return { ...prev, [id]: { ...prev[id], editing } };
-    })
+    });
   };
 
   const toggleOpen = (id: string) => {
@@ -88,7 +106,7 @@ const VehicleEntries = () => {
       ...prev,
       [id]: { ...prev[id], isOpen: !prev[id].isOpen },
     }));
-  }
+  };
 
   const updateOriginalVehicleEntry = (
     updatedVehicleEntry: VehicleEntryType
@@ -99,10 +117,6 @@ const VehicleEntries = () => {
       )
     );
   };
-
-  useEffect(() => {
-    console.log(vehicleEntries);
-  }, [vehicleEntries]);
 
   if (loading) return <Loading />;
 
@@ -115,7 +129,29 @@ const VehicleEntries = () => {
         initial="hidden"
         animate="visible"
       >
-        {vehicleEntries.map((v) => (
+        <div className={styles.filterBar}>
+          <GenericFilter
+            filters={vehicleEntryFilters}
+            onApply={(values) => {
+              setFilters(values);
+              const hasFilters = Object.values(values).some(
+                (val) =>
+                  val != null &&
+                  val !== "" &&
+                  !(Array.isArray(val) && val.every((v) => !v))
+              );
+              const result = hasFilters
+                ? applyGenericFilters(
+                    vehicleEntries,
+                    values,
+                    vehicleEntryFilters
+                  )
+                : vehicleEntries;
+              setFilteredEntries(result);
+            }}
+          />
+        </div>
+        {filteredEntries.map((v) => (
           <motion.div key={v._id} variants={fadeInUp}>
             <VehicleEntryDropdown
               vehicleEntry={v}

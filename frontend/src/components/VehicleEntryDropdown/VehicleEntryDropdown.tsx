@@ -16,6 +16,7 @@ import { addMessage } from "../../features/message";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import styles from "./VehicleEntryDropdown.module.scss";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { formatDate } from "../../utils/formatDate";
 
 interface VehicleEntryDropdownProps {
   vehicleEntry: VehicleEntryType;
@@ -54,6 +55,9 @@ const VehicleEntryDropdown: React.FC<VehicleEntryDropdownProps> = ({
   const loading = useSelector(selectVehicleLoading);
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
+
+  const isKeyDate = (key: keyof VehicleEntryType) =>
+    key.toLowerCase().includes("date");
 
   useEffect(() => {
     if (contentRef.current) {
@@ -144,7 +148,7 @@ const VehicleEntryDropdown: React.FC<VehicleEntryDropdownProps> = ({
         <div className={styles.title}>
           <span className={styles.headingLabel}>Date: </span>
           <span className={styles.headingValue}>
-            {vehicleState.localVehicleEntry.date || "—"}
+            {formatDate(new Date(vehicleState.localVehicleEntry.date)) || "—"}
           </span>
           <span>|</span>
           <span className={styles.headingLabel}>Vehicle Number:</span>
@@ -203,6 +207,8 @@ const VehicleEntryDropdown: React.FC<VehicleEntryDropdownProps> = ({
                   ? vehicleState.drafts[key] ?? ""
                   : isBalanceParty
                   ? vehicleState.localVehicleEntry["balance_party"].party_name
+                  : isKeyDate(key)
+                  ? formatDate(new Date(vehicleState.localVehicleEntry[key] as string))
                   : vehicleState.localVehicleEntry[key] ?? "—";
 
                 return (
