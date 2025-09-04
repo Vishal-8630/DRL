@@ -8,7 +8,8 @@ import { addMessage } from "../../features/message";
 import { motion } from "framer-motion";
 import { fadeInUp, staggerContainer } from "../../animations/animations";
 import BalancePartyDropDown from "../../components/BalancePartyDropDown";
-import styles from './BalanceParties.module.scss';
+import styles from "./BalanceParties.module.scss";
+import PaginatedList from "../../components/PaginatedList";
 
 type balancePartyState = {
   localBalanceParty: BalancePartyType;
@@ -121,9 +122,12 @@ const BalanceParties = () => {
         initial="hidden"
         animate="visible"
       >
-        {balanceParties.map((p) => (
-          <motion.div key={p._id} variants={fadeInUp}>
-            <BalancePartyDropDown
+        <PaginatedList
+          items={balanceParties}
+          itemsPerPage={10}
+          renderItem={(p) => (
+            <motion.div key={p._id} variants={fadeInUp}>
+              <BalancePartyDropDown
                 balanceParty={p}
                 balancePartyState={balancePartyStates[p._id]}
                 updateBalancePartyState={updateBalancePartyState}
@@ -131,9 +135,10 @@ const BalanceParties = () => {
                 toggleEditing={toggleEditing}
                 toggleOpen={toggleOpen}
                 updateOriginalBalanceParty={updateOriginalBalanceParty}
-            />
-          </motion.div>
-        ))}
+              />
+            </motion.div>
+          )}
+        />
       </motion.div>
     </div>
   );

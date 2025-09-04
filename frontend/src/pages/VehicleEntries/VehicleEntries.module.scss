@@ -1,3 +1,25 @@
+@use '../../styles/globals' as *;
+
 .vehicleEntriesContainer {
-    margin-top: 3rem;
+    margin-top: 2rem;
+}
+
+.filterContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 1rem;
+
+    .filterButton {
+        padding: 0.8rem 2rem;
+        font-size: 1.1rem;
+        font-weight: bold;
+        background-color: $brand-color;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+    }
 }

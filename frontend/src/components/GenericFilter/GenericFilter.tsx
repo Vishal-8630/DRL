@@ -36,10 +36,6 @@ const GenericFilter = <T,>({ filters, onApply }: Props<T>) => {
     onApply(filterValues);
   };
 
-  useEffect(() => {
-    console.log(filterValues);
-  }, [filterValues]);
-
   return (
     <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
       {filters.map((f, idx) => {

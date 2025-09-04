@@ -10,10 +10,10 @@ import { fadeInUp, staggerContainer } from "../../animations/animations";
 import VehicleEntryDropdown from "../../components/VehicleEntryDropdown";
 import { addMessage } from "../../features/message";
 import styles from "./VehicleEntries.module.scss";
-import { applyFilters } from "../../filters/applyFilers";
 import GenericFilter from "../../components/GenericFilter";
 import { vehicleEntryFilters } from "../../filters/vehicleEntryFilters";
 import { applyGenericFilters } from "../../filters/filerHelper";
+import Overlay from "../../components/Overlay";
 
 type VehicleState = {
   localVehicleEntry: VehicleEntryType;
@@ -33,7 +33,7 @@ const VehicleEntries = () => {
   const [filteredEntries, setFilteredEntries] = useState<VehicleEntryType[]>(
     []
   );
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
     const fetchVehicleEntries = async () => {
@@ -118,6 +118,19 @@ const VehicleEntries = () => {
     );
   };
 
+  const onApplyFilter = (values: Record<string, any>) => {
+    const hasFilters = Object.values(values).some(
+      (val) =>
+        val != null &&
+        val !== "" &&
+        !(Array.isArray(val) && val.every((v) => !v))
+    );
+    const result = hasFilters
+      ? applyGenericFilters(vehicleEntries, values, vehicleEntryFilters)
+      : vehicleEntries;
+    setFilteredEntries(result);
+  };
+
   if (loading) return <Loading />;
 
   return (
@@ -129,27 +142,24 @@ const VehicleEntries = () => {
         initial="hidden"
         animate="visible"
       >
-        <div className={styles.filterBar}>
-          <GenericFilter
-            filters={vehicleEntryFilters}
-            onApply={(values) => {
-              setFilters(values);
-              const hasFilters = Object.values(values).some(
-                (val) =>
-                  val != null &&
-                  val !== "" &&
-                  !(Array.isArray(val) && val.every((v) => !v))
-              );
-              const result = hasFilters
-                ? applyGenericFilters(
-                    vehicleEntries,
-                    values,
-                    vehicleEntryFilters
-                  )
-                : vehicleEntries;
-              setFilteredEntries(result);
-            }}
-          />
+        <div className={styles.filterContainer}>
+          <motion.button
+            className={styles.filterButton}
+            onClick={() => setIsFilterOpen(true)}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+          >
+            Filter
+          </motion.button>
+          {isFilterOpen && (
+            <Overlay onCancel={() => setIsFilterOpen(false)}>
+              <GenericFilter
+                filters={vehicleEntryFilters}
+                onApply={(values) => onApplyFilter(values)}
+              />
+            </Overlay>
+          )}
         </div>
         {filteredEntries.map((v) => (
           <motion.div key={v._id} variants={fadeInUp}>

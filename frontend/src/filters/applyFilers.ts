@@ -9,7 +9,7 @@ export function applyFilters<T>(data: T[], filters: FilterWithValue<T>[]): T[] {
     if (!value) continue;
 
     result = result.filter((item) => {
-      const fieldValue = getNestedValue(item, `${field as string}_${type}`);
+      const fieldValue = getNestedValue(item, field as string);
       if (fieldValue == null) return false;
 
       switch (type) {
