@@ -11,6 +11,13 @@ import type { RootState } from "../../app/store";
 import { type Variants, AnimatePresence, motion } from "framer-motion";
 import { fadeInUp, staggerContainer } from "../../animations/animations";
 import BillEntriesTableView from "../../components/BillEntriesTableView";
+import {
+  buildRows,
+  getHeaderLabels,
+  getOrderedHeaders,
+} from "../../utils/flattenEntries";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const SEARCH_MAPPING: Record<string, string> = {
   "Bill Number": "bill_no",
@@ -127,7 +134,7 @@ const BillEntries = () => {
 
   useEffect(() => {
     setSearch("");
-  }, [view]); 
+  }, [view]);
 
   const handleSearchClear = () => {
     setSearch("");
@@ -176,6 +183,43 @@ const BillEntries = () => {
         entry._id === updatedEntry._id ? updatedEntry : entry
       )
     );
+  };
+
+  const handleExport = () => {
+    const headers = getOrderedHeaders(entries);
+    const headerLabels = getHeaderLabels(headers);
+    const rows = buildRows(entries, headers);
+
+    // Replace keys with labels for Excel
+    const labeledRows = rows.map((row) => {
+      const labeled: Record<string, any> = {};
+      headers.forEach((key, i) => {
+        labeled[headerLabels[i]] = row[key];
+      });
+      return labeled;
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(labeledRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Entries");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const blob = new Blob([excelBuffer], {
+      type: "application/octet-stream",
+    });
+    // 👇 generate filename with current date
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const year = now.getFullYear();
+    const dateStr = `${day}-${month}-${year}`;
+    const timeStr = now.toTimeString().split(" ")[0].replace(/:/g, "-"); // HH-MM-SS
+    const fileName = `entries_${dateStr}_${timeStr}.xlsx`;
+
+    saveAs(blob, fileName);
   };
 
   if (loading) return <Loading />;
@@ -238,12 +282,19 @@ const BillEntries = () => {
           >
             {entries.map((entry) => (
               <motion.div key={entry._id} variants={fadeInUp}>
-                <BillEntriesDropdownView entry={entry} onUpdate={updateOriginalEntry} />
+                <BillEntriesDropdownView
+                  entry={entry}
+                  onUpdate={updateOriginalEntry}
+                />
               </motion.div>
             ))}
           </motion.div>
         )}
       </div>
+
+      <button className={styles.excelBtn} onClick={handleExport}>
+        Download Excel
+      </button>
     </div>
   );
 };
