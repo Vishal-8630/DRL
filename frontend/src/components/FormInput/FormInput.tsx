@@ -42,6 +42,7 @@ const FormInput: React.FC<FormInputProps> = ({
 
   const handleFocus = () => setIsFocused(true);
   const handleBlur = () => setIsFocused(false);
+  console.log(icon);
 
   return (
     <div className={styles.formGroup}>

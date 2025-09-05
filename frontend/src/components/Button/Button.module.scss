@@ -5,8 +5,7 @@
     width: 100%;
     display: flex;
     justify-content: center;
-    margin-top: 2rem;
-    margin-bottom: 1.5rem;
+    margin-top: 0.3rem;
 }
 
 .primaryBtn {
@@ -14,8 +13,8 @@
     min-width: 50%;
     border-radius: 8px;
     border: none;
-    color: $brand-color;
-    font-size: 1.2rem;
+    color: $secondary;
+    font-size: 1rem;
     cursor: pointer;
-    background: white;
+    background: $neutral-dark;
 }

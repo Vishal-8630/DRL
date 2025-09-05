@@ -2,7 +2,7 @@
 
 .messageContainer {
   @include flex-column();
-  position: absolute;
+  position: fixed;
   top: 100px;
   right: 0;
   gap: 0.5rem;

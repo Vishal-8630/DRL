@@ -66,10 +66,20 @@
   padding: 0rem 1.5rem 1.5rem 1.5rem;
 
   .submitBtn {
-    @include button-style($primary, $neutral-light, $h-padding: 0.8rem);
+    background-color: $neutral-dark;
+    color: $neutral-light;
+    cursor: pointer;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 14px;
     min-width: 50%;
     font-size: 1.1rem;
     letter-spacing: 0.3px;
+    transition: background-color 0.3s ease-in-out;
+
+    &:hover {
+      background-color: darken($neutral-dark, 10%);
+    }
 
     @include respond-to(lg) {
       width: 100%;

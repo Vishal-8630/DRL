@@ -12,9 +12,11 @@ const Overlay: React.FC<OverlayProps> = ({ children, onCancel }) => {
   return (
     <div className={styles.overlay} onClick={onCancel}>
       <div className={styles.content} onClick={(e) => e.stopPropagation()}>
-        {children}
+        <div className={styles.scrollable}>
+          {children}
+        </div>
         <button className={styles.closeBtn} onClick={onCancel}>
-            <FaTimes />
+          <FaTimes />
         </button>
       </div>
     </div>

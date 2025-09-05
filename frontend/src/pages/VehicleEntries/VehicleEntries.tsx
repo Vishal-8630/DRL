@@ -153,10 +153,11 @@ const VehicleEntries = () => {
             Filter
           </motion.button>
           {isFilterOpen && (
-            <Overlay onCancel={() => setIsFilterOpen(false)}>
+            <Overlay onCancel={() => {setIsFilterOpen(false); console.log("Clicked")}}>
               <GenericFilter
                 filters={vehicleEntryFilters}
                 onApply={(values) => onApplyFilter(values)}
+                onCancel={() => setIsFilterOpen(false)}
               />
             </Overlay>
           )}

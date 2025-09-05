@@ -1,13 +1,16 @@
 // src/components/GenericFilters.tsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { FilterConfig, AppliedFilters } from "../../filters/filter";
+import styles from "./GenericFilter.module.scss";
+import SmartDropdown from "../SmartDropdown";
 
 type Props<T> = {
   filters: FilterConfig<T>[];
   onApply: (values: AppliedFilters<T>) => void;
+  onCancel: () => void;
 };
 
-const GenericFilter = <T,>({ filters, onApply }: Props<T>) => {
+const GenericFilter = <T,>({ filters, onApply, onCancel }: Props<T>) => {
   const [filterValues, setFilterValues] = useState<Record<string, any>>({});
 
   const handleChange = (field: string, value: any, type?: string) => {
@@ -37,115 +40,122 @@ const GenericFilter = <T,>({ filters, onApply }: Props<T>) => {
   };
 
   return (
-    <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-      {filters.map((f, idx) => {
-        if (f.type === "sort") {
-          return (
-            <div key={idx}>
-              <label>{f.label}</label>
-              <select
-                value={filterValues[`${f.field as string}$sort`] || ""}
-                onChange={(e) =>
-                  handleChange(f.field.toString(), e.target.value, "sort")
-                }
-              >
-                <option value="">{f.label}</option>
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
-              </select>
-            </div>
-          );
-        }
-
-        if (f.type === "less") {
-          return (
-            <div key={idx}>
-              <label>{f.label}</label>
-              <input
-                type="date"
-                value={filterValues[`${f.field as string}$less`] || ""}
-                onChange={(e) =>
-                  handleChange(f.field.toString(), e.target.value, "less")
-                }
-              />
-            </div>
-          );
-        }
-
-        if (f.type === "greater") {
-          return (
-            <div key={idx}>
-              <label>{f.label}</label>
-              <input
-                type="date"
-                value={filterValues[`${f.field as string}$greater`] || ""}
-                onChange={(e) =>
-                  handleChange(f.field.toString(), e.target.value, "greater")
-                }
-              />
-            </div>
-          );
-        }
-
-        if (f.type === "range") {
-          return (
-            <div
-              key={idx}
-              style={{
-                display: "flex",
-                gap: "0.5rem",
-                flexDirection: "column",
-              }}
-            >
-              <label>{f.label}</label>
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <input
-                  type="date"
-                  placeholder="From"
-                  value={filterValues[`${f.field as string}$range`]?.[0] || ""}
-                  onChange={(e) =>
-                    handleRangeChange(`${f.field.toString()}$range`, "min", e.target.value)
-                  }
-                />
-                <input
-                  type="date"
-                  placeholder="To"
-                  value={filterValues[`${f.field as string}$range`]?.[1] || ""}
-                  onChange={(e) =>
-                    handleRangeChange(`${f.field.toString()}$range`, "max", e.target.value)
+    <div className={styles.filterContainer}>
+      <h3>Choose Filters</h3>
+      <div className={styles.filterBody}>
+        {filters.map((f, idx) => {
+          if (f.type === "sort") {
+            return (
+              <div key={idx} className={styles.selectContainer}>
+                <SmartDropdown
+                  label={f.label}
+                  mode="select"
+                  value={filterValues[`${f.field as string}$sort`] || ""}
+                  options={[
+                    { label: f.label, value: "" },
+                    { label: "Ascending", value: "asc" },
+                    { label: "Descending", value: "desc" },
+                  ]}
+                  placeholder="Sort By Date"
+                  onChange={(val) =>
+                    handleChange(f.field.toString(), val, "sort")
                   }
                 />
               </div>
-            </div>
-          );
-        }
+            );
+          }
 
-        if (f.type === "text") {
-          return (
-            <div key={idx}>
-              <label>{f.label}</label>
-              <input
-                type="text"
-                value={filterValues[`${f.field as string}$text`] || ""}
-                onChange={(e) =>
-                  handleChange(f.field.toString(), e.target.value, "text")
-                }
-              />
-            </div>
-          );
-        }
+          if (f.type === "greater" || f.type === "less") {
+            return (
+              <div key={idx} className={styles.dateContainer}>
+                <label>{f.label}</label>
+                <input
+                  type="date"
+                  value={filterValues[`${f.field as string}$${f.type}`] || ""}
+                  onChange={(e) =>
+                    handleChange(f.field.toString(), e.target.value, f.type)
+                  }
+                />
+              </div>
+            );
+          }
 
-        return null;
-      })}
-      <button onClick={applyFilters}>Apply</button>
-      <button
-        onClick={() => {
-          setFilterValues({});
-          onApply({});
-        }}
-      >
-        Clear
-      </button>
+          if (f.type === "range") {
+            return (
+              <div key={idx} className={styles.rangeContainer}>
+                <label>{f.label}</label>
+                <div>
+                  <input
+                    type="date"
+                    placeholder="From"
+                    value={
+                      filterValues[`${f.field as string}$range`]?.[0] || ""
+                    }
+                    onChange={(e) =>
+                      handleRangeChange(
+                        `${f.field.toString()}$range`,
+                        "min",
+                        e.target.value
+                      )
+                    }
+                  />
+                  <input
+                    type="date"
+                    placeholder="To"
+                    value={
+                      filterValues[`${f.field as string}$range`]?.[1] || ""
+                    }
+                    onChange={(e) =>
+                      handleRangeChange(
+                        `${f.field.toString()}$range`,
+                        "max",
+                        e.target.value
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            );
+          }
+
+          if (f.type === "text") {
+            return (
+              <div key={idx} className={styles.textContainer}>
+                <label>{f.label}</label>
+                <input
+                  type="text"
+                  placeholder={f.label}
+                  value={filterValues[`${f.field as string}$text`] || ""}
+                  onChange={(e) =>
+                    handleChange(f.field.toString(), e.target.value, "text")
+                  }
+                />
+              </div>
+            );
+          }
+
+          return null;
+        })}
+      </div>
+      <div className={styles.filterControls}>
+        <button
+          onClick={() => {
+            applyFilters();
+            onCancel();
+          }}
+        >
+          Apply
+        </button>
+        <button
+          onClick={() => {
+            setFilterValues({});
+            onApply({});
+            onCancel();
+          }}
+        >
+          Clear
+        </button>
+      </div>
     </div>
   );
 };
