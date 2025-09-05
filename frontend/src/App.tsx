@@ -6,6 +6,7 @@ import AppRoutes from "./routes/AppRoutes";
 import styles from "./App.module.scss";
 import useAuthCheck from "./hooks/useAuthCheck";
 import Loading from "./components/Loading";
+import MoveToTopButton from "./components/MoveToTopButton";
 
 
 function App() {
@@ -18,10 +19,11 @@ function App() {
       <div className={styles.appContainer}>
         <div className={styles.navbarContainer}>
           <Navbar />
-          <MessageBar />
         </div>
         <div className={styles.contentContainer}>
+          <MessageBar />
           <AppRoutes />
+          <MoveToTopButton />
         </div>
         <div className={styles.bottomBarContainer}>
           <BottomBar />

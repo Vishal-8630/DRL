@@ -3,26 +3,30 @@
 
 .formGroup {
     @include flex-column();
-    margin-bottom: 1rem;
+    @include spacing(margin, (bottom, $spacing-md));
 
     label {
-        margin-bottom: 0.5rem;
-        font-size: 1rem;
+        @include spacing(margin, (bottom, 0.5rem));
+        @include responsive-font(0.9rem, 1rem);
     }
 
     input,
     textarea {
         width: 100%;
-        padding: 0.8rem 0.6rem;
         border: none;
-        font-size: 1rem;
-        border-radius: 13px;
         font-family: $font-body;
-        padding-left: 0.9rem;
-        border: 2px solid black;
+        @include spacing(padding, (horizontal, 1.1rem), (vertical, $spacing-md));
+        @include border(2px);
+        @include responsive-font(0.9rem, 1rem);
+        @include border-radius($radius-lg);
+
+        &.withIcon {
+            @include spacing(padding, (left, 2.5rem));
+        }
+
 
         &::placeholder {
-            color: black;
+            color: $neutral-dark;
         }
 
     }
@@ -37,10 +41,6 @@
     position: relative;
     display: flex;
     align-items: center;
-
-    input.withIcon {
-        padding-left: 2.5rem;
-    }
 
     .icon {
         position: absolute;
@@ -63,13 +63,18 @@
 
 select {
     width: 100%;
-    padding: 0.8rem 1rem;
     border: none;
-    font-size: 1.1rem;
-    border-radius: 13px;
+    font-family: $font-body;
+    @include spacing(padding, (horizontal, 0.5rem), (vertical, 0.8rem));
+    @include border(2px);
+    @include responsive-font(0.9rem, 1rem);
+    @include border-radius($radius-lg);
     outline: none;
-    box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.25),
-        inset -2px -2px 6px rgba(255, 255, 255, 0.7);
+
+
+    &::placeholder {
+        color: $neutral-dark;
+    }
 
     option {
         font-family: $font-body;

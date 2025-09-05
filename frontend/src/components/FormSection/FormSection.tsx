@@ -13,11 +13,9 @@ const FormSection: React.FC<FormSectionProps> = ({ title, children }) => {
       className={styles.formSection}
       drag
       dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
-      initial={{ opacity: 0, y: 150 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.05 }}
-      transition={{ duration: 0.7 }}
-      viewport={{ once: true, amount: 0.2 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
     >
       <div className={styles.sectionTitle}>{title}</div>
       {children}

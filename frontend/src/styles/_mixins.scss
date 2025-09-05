@@ -14,12 +14,6 @@
     }
   }
 
-  @else if $breakpoint ==md1 {
-    @media (max-width: $breakpoint-md1) {
-      @content;
-    }
-  }
-
   @else if $breakpoint ==md {
     @media (max-width: $breakpoint-md) {
       @content;
@@ -33,9 +27,21 @@
   }
 
   @else if $breakpoint ==xl {
-    @media (max-width: $breakpoint-xl) {
+    @media (min-width: $breakpoint-xl) {
       @content;
     }
+  }
+
+  @else if $breakpoint ==xxl {
+    @media (min-width: $breakpoint-xxl) {
+      @content;
+    }
+  }
+}
+
+@mixin respond-to-between($min, $max) {
+  @media (min-width: $min) and (max-width: $max) {
+    @content;
   }
 }
 
@@ -113,9 +119,57 @@
 // -----------------------------
 // Spacing
 // -----------------------------
-@mixin spacing($margin: 0, $padding: 0) {
-  margin: $margin;
-  padding: $padding;
+
+// Examples:
+// 1. All sides, single value
+// @include spacing(margin, (all, 20px));
+// → margin: 20px;
+
+// 2. All sides, shorthand
+// @include spacing(margin, (all, 10px 20px 30px 40px));
+// → margin: 10px 20px 30px 40px;
+
+// 3. Axis with one value
+// @include spacing(padding, (vertical, 15px));
+// → padding-top: 15px; padding-bottom: 15px;
+
+// 4. Axis with two values
+// @include spacing(padding, (horizontal, 10px 20px));
+// → padding-left: 10px; padding-right: 20px;
+
+// 5. Mix everything
+// @include spacing(margin, (horizontal, 10px), (top, 5px), (all, 2px));
+// → margin: 2px; margin-left: 10px; margin-right: 10px; margin-top: 5px;
+
+@mixin spacing($property: margin, $args...) {
+  @each $arg in $args {
+    $side: nth($arg, 1);
+    $value: nth($arg, 2);
+
+    // Handle shorthand values (like 10px, 10px 20px, etc.)
+    @if $side == all {
+      #{$property}: $value;
+    } @else if $side == vertical {
+      @if length($value) == 1 {
+        #{$property}-top: $value;
+        #{$property}-bottom: $value;
+      } @else if length($value) == 2 {
+        #{$property}-top: nth($value, 1);
+        #{$property}-bottom: nth($value, 2);
+      }
+    } @else if $side == horizontal {
+      @if length($value) == 1 {
+        #{$property}-left: $value;
+        #{$property}-right: $value;
+      } @else if length($value) == 2 {
+        #{$property}-left: nth($value, 1);
+        #{$property}-right: nth($value, 2);
+      }
+    } @else {
+      // Specific side (top, right, bottom, left)
+      #{$property}-#{$side}: $value;
+    }
+  }
 }
 
 // -----------------------------
@@ -143,11 +197,16 @@
 }
 
 // -----------------------------
-// Shadows
+// Shadows / Borders
 // -----------------------------
 @mixin box-shadow($x: 0px, $y: 4px, $blur: 6px, $color: rgba(0, 0, 0, 0.1)) {
   box-shadow: $x $y $blur $color;
 }
+
+@mixin border($size: 1, $style: solid, $color: $neutral-dark) {
+  border: $size $style $color;
+}
+
 
 // -----------------------------
 // Grids & Containers

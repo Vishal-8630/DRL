@@ -2,9 +2,9 @@
 
 .messageContainer {
   @include flex-column();
-  position: fixed;
+  position: absolute;
   top: 100px;
-  right: 1rem;
+  right: 0;
   gap: 0.5rem;
   z-index: 1000;
 }

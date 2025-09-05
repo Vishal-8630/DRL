@@ -1,21 +1,27 @@
 @use '../../styles/globals' as *;
+@use "sass:color";
 
 .formSection {
-    background: rgba(83, 79, 37, 0.9);
-    box-shadow: 6px 6px 10px rgba(0, 0, 0, 0.7);
-    padding: 1rem 2rem;
-    border-radius: 25px;
-    border: 5px solid rgba(0, 0, 0, 0.4);
-    margin: 1.5rem;
+  @include bg-color($secondary-bg);
+  @include border-radius($radius-lg);
+  @include spacing(margin, (all, $spacing-md));
+  @include spacing(padding, (vertical, $spacing-md), (horizontal, $spacing-lg));
+  box-shadow: $box-shadow-lg;
+  border: $border-lg;
+
+  @include respond-to(md) {
+    @include spacing(margin, (all, $spacing-sm));
+    @include spacing(padding, (all, $spacing-md));
+  }
 }
 
 .sectionTitle {
+  @include responsive-font($heading-sm, $heading-md, $heading-lg);
   text-align: center;
-  font-size: 1.6rem;
   letter-spacing: 0.5px;
-  margin-bottom: 1rem;
   font-family: $font-heading;
-  text-shadow: 2px 2px 2px black;
+  text-shadow: $text-shadow;
   border-bottom: 1px solid $neutral-light;
-  padding-bottom: 1rem;
+  @include spacing(margin, (bottom, $spacing-md));
+  @include spacing(padding, (bottom, $spacing-md))
 }
