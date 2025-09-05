@@ -1,11 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Poppins:wght@400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&family=Story+Script&display=swap');
 
+
 /* ----------------------------- */
 /* Colors                        */
 /* ----------------------------- */
 $primary: #1d1e22;        // Main brand color
-$secondary: #fff;      // Secondary brand color
+$secondary: #f9f9f9;      // Secondary brand color
 // Need to change
 $accent: #eca6a6;         // Call-to-action / alerts
 
@@ -16,6 +17,7 @@ $neutral-light: #F8FAFC;  // Light text / background
 $neutral-dark: #111827;   // Dark text
 
 $hover-color: #a2a2a4; // Default hover color
+$hover-bg: #f0f4ff;
 
 $disabled-bg: #F3F4F6;
 $disabled-border: #D1D5DB;
@@ -73,6 +75,9 @@ $text-shadow: 2px 2px 2px black;
 /* Borders                     */
 /* ----------------------------- */
 $border-lg: 5px solid rgba(0, 0, 0, 0.4);
+$border-dark: 1px solid $primary;
+$border-light: 1px solid $secondary;
+$border-input: 1px solid #F8FAFC;
 
 $heading-sm: 1.5rem;
 $heading-md: 1.7rem;

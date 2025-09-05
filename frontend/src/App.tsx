@@ -8,6 +8,12 @@ import useAuthCheck from "./hooks/useAuthCheck";
 import Loading from "./components/Loading";
 import MoveToTopButton from "./components/MoveToTopButton";
 
+import '@syncfusion/ej2-base/styles/material.css';
+import '@syncfusion/ej2-react-calendars/styles/material.css';
+import { registerLicense } from "@syncfusion/ej2-base";
+
+registerLicense("Ngo9BigBOggjHTQxAR8/V1JFaF5cXGRCd0x3R3xbf1x1ZFRGalxTTndYUiweQnxTdEBjUH9bcXRVRGFbVUVwV0leYg==");
+
 
 function App() {
   const checking = useAuthCheck();
