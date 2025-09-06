@@ -1,5 +1,6 @@
 import BillingParty from '../models/billingPartyModel.js';
 import { successResponse } from '../utils/response.js';
+import AppError from '../utils/AppError.js';
 
 const newBillingParty = async (req, res, next) => {
     const { name, address, gst_no } = req.body;
@@ -33,4 +34,13 @@ const updateBillingParty = async (req, res, next) => {
     return successResponse(res, "Billing Party Updated");
 }
 
-export { newBillingParty, getAllBillingParties, updateBillingParty };
+const getBillingPartyByName = async (req, res, next) => {
+    const name = req.params.name;
+    const party = await BillingParty.find({ name: { $regex: name, $options: "i" } });
+    if (!party) {
+        return next(new AppError("Billing Party not found", 404));
+    }
+    return successResponse(res, "", party);
+}
+
+export { newBillingParty, getAllBillingParties, updateBillingParty, getBillingPartyByName };

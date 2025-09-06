@@ -5,6 +5,16 @@
   width: 100%;
   height: 100%;
 
+  .heading {
+    font-family: $font-heading;
+    text-align: center;
+    @include spacing(margin, (bottom, $spacing-md), (top, $spacing-lg));
+    @include spacing(padding, (bottom, $spacing-sm));
+    border-bottom: $border-dark;
+    @include responsive-font(1.5rem, $heading-md, $heading-lg);
+    @include text-color($primary);
+  }
+
   .entryForm {
     width: 100%;
 
@@ -36,6 +46,10 @@
     @include flex-center();
     gap: 0.5rem;
 
+    @include respond-to(md) {
+      flex-direction: column;
+    }
+
     input {
       width: 100%;
       padding: 0.8rem 1rem;
@@ -43,46 +57,33 @@
       font-size: 1rem;
       border-radius: 0.3rem;
       font-family: $font-body;
-    }
 
-    button {
-      @include button-style($primary, $neutral-light, $radius: 2px);
-      padding: 0.8rem 1rem;
-      font-size: 0.9rem;
+      @include primary-input();
     }
   }
 
-  .addExtraBtn {
-    @include button-style($primary, $neutral-light, $h-padding: 0.8rem);
-    width: 100%;
-    font-size: 1.1rem;
-    letter-spacing: 0.3px;
+  .addExtraChargeBtn {
+    @include secondary-btn();
+    @include spacing(margin, (top, 0.8rem));
+  }
+
+  .removeExtraChargeBtn {
+    @include primary-btn();
+    @include responsive-font(0.8rem, 0.8rem, 0.8rem);
+
+    @include respond-to(md) {
+      @include spacing(margin, (top, 0.7rem));
+    }
   }
 }
 
 .buttonContainer {
-  text-align: center;
-  width: 100%;
-  padding: 0rem 1.5rem 1.5rem 1.5rem;
+  @include spacing(margin, (horizontal, 0.8rem), (top, 2rem));
+  @include flex-center();
 
   .submitBtn {
-    background-color: $neutral-dark;
-    color: $neutral-light;
-    cursor: pointer;
-    padding: 0.8rem;
-    border: none;
-    border-radius: 14px;
-    min-width: 50%;
-    font-size: 1.1rem;
-    letter-spacing: 0.3px;
-    transition: background-color 0.3s ease-in-out;
-
-    &:hover {
-      background-color: darken($neutral-dark, 10%);
-    }
-
-    @include respond-to(lg) {
-      width: 100%;
-    }
+    width: 100%;
+    max-width: 30rem;
+    @include primary-btn();
   }
 }

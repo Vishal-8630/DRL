@@ -1,24 +1,29 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./SmartDropdown.module.scss";
+import { AnimatePresence, motion } from "framer-motion";
 
 type Option = { label: string; value: string };
 
 interface Props {
-  label: string;
+  id?: string;
+  label?: string;
   options?: Option[];
   mode?: "select" | "search";
   value?: string;
   placeholder?: string;
+  inputRef?: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | undefined;
   fetchOptions?: (query: string) => Promise<Option[]>;
-  onChange: (val: string) => void;
+  onChange: (val: string, mode: "select" | "search") => void;
 }
 
 const SmartDropdown = ({
+  id,
   label,
   options = [],
   mode = "select",
   value = "",
   placeholder = "Select...",
+  inputRef,
   fetchOptions,
   onChange,
 }: Props) => {
@@ -60,15 +65,19 @@ const SmartDropdown = ({
 
   // keep "selected" in sync with external value
   useEffect(() => {
-    if (value) {
-      const match = data.find((opt) => opt.value === value);
-      if (match) {
-        setSelected(match);
+    if (!search) {
+      if (value) {
+        const match = data.find((opt) => opt.value === value);
+        if (match) {
+          setSelected(match);
+          setSearch(match.label);
+        } else {
+          setSelected({ label: value, value });
+        }
       } else {
-        setSelected({ label: value, value }); // fallback
+        setSelected(null);
+        setSearch("");
       }
-    } else {
-      setSelected(null);
     }
   }, [value, data]);
 
@@ -79,7 +88,7 @@ const SmartDropdown = ({
         fetchOptions(search)
           .then(setData)
           .catch(() => setData([]));
-      }, 300); // debounce
+      }, 500);
       return () => clearTimeout(timeout);
     } else if (mode === "search" && search.length === 0) {
       setData([]);
@@ -88,22 +97,26 @@ const SmartDropdown = ({
     }
   }, [search, mode, fetchOptions, options]);
 
-  const handleSelect = (opt: Option) => {
+  /**
+   * Handles selecting an option in the dropdown, whether from the select list or after searching.
+   * @param {Option} opt - The selected option.
+   * @param {"select"|"search"} mode - The mode of the dropdown.
+   */
+  const handleSelect = (opt: Option, mode: "select" | "search") => {
     setSelected(opt);
-    onChange(opt.value);
+    onChange(opt.value, mode);
     setOpen(false);
     setSearch("");
   };
 
   return (
     <div className={styles.dropdown} ref={ref}>
-      <label>{label}</label>
+      {label && <label>{label}</label>}
 
       {mode === "select" ? (
         <div
           className={styles.control}
           onClick={(e) => {
-            // stop propagation not necessary, but safe: ensure we toggle only after pointer handlers
             e.stopPropagation();
             setOpen((prev) => !prev);
           }}
@@ -118,35 +131,55 @@ const SmartDropdown = ({
         </div>
       ) : (
         <input
+          id={id}
           type="text"
           className={styles.input}
-          value={search || (selected ? selected.label : "")}
-          onChange={(e) => setSearch(e.target.value)}
+          value={search}
+          onChange={(e) => {
+            const val = e.target.value;
+            setSearch(val);
+
+            if (val === "") {
+              setSelected(null);
+              onChange("", "search");
+            }
+          }}
           placeholder={placeholder}
+          ref={inputRef as React.RefObject<HTMLInputElement>}
           onFocus={() => setOpen(true)}
         />
       )}
 
       {open && (
-        <ul className={styles.menu}>
-          {data.length === 0 ? (
-            <li className={styles.menuEmpty}>No results</li>
-          ) : (
-            data.map((opt) => (
-              <li
-                key={opt.value}
-                onClick={() => handleSelect(opt)}
-                role="option"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSelect(opt);
-                }}
-              >
-                {opt.label}
-              </li>
-            ))
+        <AnimatePresence>
+          {(data.length > 0 || data.length === 0) && (
+            <motion.ul
+              className={styles.menu}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+            >
+              {data.length === 0 ? (
+                <li className={styles.menuEmpty}>No results</li>
+              ) : (
+                data.map((opt) => (
+                  <li
+                    key={opt.value}
+                    onClick={() => handleSelect(opt, mode)}
+                    role="option"
+                    tabIndex={0}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && handleSelect(opt, mode)
+                    }
+                  >
+                    {opt.label}
+                  </li>
+                ))
+              )}
+            </motion.ul>
           )}
-        </ul>
+        </AnimatePresence>
       )}
     </div>
   );

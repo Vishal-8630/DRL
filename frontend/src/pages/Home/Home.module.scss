@@ -86,6 +86,7 @@
         @include text-color($neutral-light);
         @include spacing(padding, (horizontal, $spacing-lg), (vertical, $spacing-md));
         @include border-radius($spacing-sm);
+        font-family: $font-link;
 
         @include respond-to(md) {
           @include spacing(padding, (horizontal, $spacing-sm), (vertical, $spacing-sm));
@@ -159,6 +160,7 @@
       @include text-color($neutral-dark);
       @include spacing(padding, (horizontal, $spacing-lg), (vertical, $spacing-md));
       @include border-radius($spacing-sm);
+      font-family: $font-link;
 
       @include respond-to(md) {
         @include spacing(padding, (horizontal, $spacing-sm), (vertical, $spacing-sm));
@@ -216,6 +218,7 @@
     @include text-color($primary);
     @include border($size: 1px, $color: $primary);
     @include transition($duration: 0.5s);
+    font-family: $font-link;
 
     &:hover {
       transform: scale(1.05);

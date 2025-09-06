@@ -3,6 +3,7 @@ import {
   newBillingParty,
   getAllBillingParties,
   updateBillingParty,
+  getBillingPartyByName,
 } from "../controllers/billingPartyController.js";
 import { billingPartyValidations } from "../validators/billingPartyValidator.js";
 
@@ -15,5 +16,6 @@ router.post(
   billingPartyValidations,
   updateBillingParty
 );
+router.get("/by-name/:name", getBillingPartyByName);
 
 export default router;

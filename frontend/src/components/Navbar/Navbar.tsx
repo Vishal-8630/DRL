@@ -1,5 +1,5 @@
 import styles from "./Navbar.module.scss";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { type AppDispatch, type RootState } from "../../app/store";
 import api from "../../api/axios";

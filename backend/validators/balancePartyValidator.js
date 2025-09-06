@@ -2,7 +2,7 @@ import { body, validationResult } from 'express-validator';
 
 export const balancePartyValidations = [
     body('party_name')
-        .notEmpty().withMessage('Party Name is required'),
+        .trim().notEmpty().withMessage('Party Name is required'),
 
     (req, res, next) => {
         const errors = validationResult(req);

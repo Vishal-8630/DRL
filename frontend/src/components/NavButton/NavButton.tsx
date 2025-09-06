@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import styles from "./NavButton.module.scss";
 import { FaArrowRight } from "react-icons/fa";
@@ -88,6 +88,7 @@ const NavButton: React.FC<NavButtonProps> = ({ link }) => {
           <NavLink
             to={link.to || "#"}
             onClick={() => link.setIsNavOpen && link.setIsNavOpen()}
+            className={styles.navLink}
           >
             {link.label}
           </NavLink>

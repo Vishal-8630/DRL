@@ -1,86 +1,3 @@
-// @use '../../styles/globals' as *;
-
-
-// .formGroup {
-//     @include flex-column();
-//     @include spacing(margin, (bottom, $spacing-md));
-
-//     label {
-//         @include spacing(margin, (bottom, 0.5rem));
-//         @include responsive-font(0.9rem, 1rem);
-//     }
-
-//     input,
-//     textarea {
-//         width: 100%;
-//         border: none;
-//         font-family: $font-body;
-//         @include spacing(padding, (horizontal, 1.1rem), (vertical, $spacing-md));
-//         @include border(2px);
-//         @include responsive-font(0.9rem, 1rem);
-//         @include border-radius($radius-lg);
-
-//         &.withIcon {
-//             @include spacing(padding, (left, 2.5rem));
-//         }
-
-
-//         &::placeholder {
-//             color: $neutral-dark;
-//         }
-
-//     }
-
-//     textarea {
-//         resize: vertical;
-//         min-height: 60px;
-//     }
-// }
-
-// .inputWrapper {
-//     position: relative;
-//     display: flex;
-//     align-items: center;
-
-//     .icon {
-//         position: absolute;
-//         left: 0.75rem;
-//         color: $neutral-dark;
-//         pointer-events: none;
-//         z-index: 2;
-//     }
-
-//     .togglePassword {
-//         position: absolute;
-//         right: 0.75rem;
-//         color: $neutral-dark;
-//         cursor: pointer;
-//         display: flex;
-//         align-items: center;
-//         z-index: 2;
-//     }
-// }
-
-// select {
-//     width: 100%;
-//     border: none;
-//     font-family: $font-body;
-//     @include spacing(padding, (horizontal, 0.5rem), (vertical, 0.8rem));
-//     @include border(2px);
-//     @include responsive-font(0.9rem, 1rem);
-//     @include border-radius($radius-lg);
-//     outline: none;
-
-
-//     &::placeholder {
-//         color: $neutral-dark;
-//     }
-
-//     option {
-//         font-family: $font-body;
-//     }
-// }
-
 @use '../../styles/globals' as *;
 
 .formGroup {
@@ -103,20 +20,7 @@
     input,
     select,
     textarea {
-      width: 100%;
-      padding: 0.6rem 0.8rem;
-      border: 1px solid $neutral-light;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      background: #fff; // make input background white
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); // subtle shadow for depth
-
-      &:focus {
-        border-color: $primary;
-        box-shadow: 0 0 0 2px rgba($primary, 0.15), 0 2px 5px rgba(0, 0, 0, 0.05);
-      }
+      @include primary-input();
     }
 
     .withIcon {

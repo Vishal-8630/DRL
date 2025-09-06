@@ -147,25 +147,35 @@
     $value: nth($arg, 2);
 
     // Handle shorthand values (like 10px, 10px 20px, etc.)
-    @if $side == all {
+    @if $side ==all {
       #{$property}: $value;
-    } @else if $side == vertical {
-      @if length($value) == 1 {
+    }
+
+    @else if $side ==vertical {
+      @if length($value)==1 {
         #{$property}-top: $value;
         #{$property}-bottom: $value;
-      } @else if length($value) == 2 {
+      }
+
+      @else if length($value)==2 {
         #{$property}-top: nth($value, 1);
         #{$property}-bottom: nth($value, 2);
       }
-    } @else if $side == horizontal {
-      @if length($value) == 1 {
+    }
+
+    @else if $side ==horizontal {
+      @if length($value)==1 {
         #{$property}-left: $value;
         #{$property}-right: $value;
-      } @else if length($value) == 2 {
+      }
+
+      @else if length($value)==2 {
         #{$property}-left: nth($value, 1);
         #{$property}-right: nth($value, 2);
       }
-    } @else {
+    }
+
+    @else {
       // Specific side (top, right, bottom, left)
       #{$property}-#{$side}: $value;
     }
@@ -244,4 +254,61 @@
   overflow: hidden;
   clip: rect(1px, 1px, 1px, 1px);
   white-space: nowrap;
+}
+
+@mixin primary-btn {
+  background-color: $neutral-dark;
+  color: $neutral-light;
+  border: none;
+  @include spacing(padding, (vertical, 0.8rem), (horizontal, 1rem));
+  @include responsive-font(0.8rem, 1rem, 1.2rem);
+  font-family: $font-link;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+@mixin secondary-btn {
+  background-color: $neutral-light;
+  border: $border-light;
+  cursor: pointer;
+  box-shadow: $box-shadow-3d;
+  border-radius: $radius-md;
+  @include spacing(padding, (vertical, 0.8rem), (horizontal, 1rem));
+  font-family: $font-link;
+  @include responsive-font(0.8rem, 1rem, 1rem);
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+@mixin primary-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid $neutral-light;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 2px rgba($primary, 0.15), 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, type RefObject } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +10,11 @@ import { partyFailure, partyStart, partySuccess } from "../../features/party";
 import { addMessage } from "../../features/message";
 
 import type { RootState } from "../../app/store";
-import type { EntryType } from "../../types/entry";
+import {
+  EXTRA_CHARGE_LABELS,
+  type EntryType,
+  type ExtraCharge,
+} from "../../types/entry";
 import type { BillingPartyType } from "../../types/party";
 
 import styles from "./NewBillingEntry.module.scss";
@@ -24,6 +28,8 @@ interface InputType {
   name: string;
   options?: string[];
 }
+
+type Option = { label: string; value: string };
 
 const BILL_INFO_INPUTS: InputType[] = [
   { type: "number", label: "Bill No.", name: "bill_no" },
@@ -170,12 +176,14 @@ const Entry: React.FC = () => {
   const [parties, setParties] = useState<BillingPartyType[]>([]);
   const [selectedParty, setSelectedParty] = useState<BillingPartyType>({
     _id: "",
-    name: "none",
+    name: "",
     address: "",
     gst_no: "",
   });
   const [partyError, setPartyError] = useState("");
-  const partyRef = useRef<HTMLSelectElement>(null);
+  const partyRef = useRef<
+    HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
+  >(null);
 
   const [state, setState] = useState("UP");
 
@@ -238,27 +246,42 @@ const Entry: React.FC = () => {
       setErrors({ ...errorsRef.current });
     }
 
-    if (name === "billing_party") {
-      if (value === "") {
-        console.log(value);
-        const emptyParty = { _id: "", name: "", address: "", gst_no: "" };
-        setSelectedParty(emptyParty);
-        setEntry((prev) => ({ ...prev, billing_party: emptyParty }));
-      } else {
-        const party = parties.find((p) => p.name === value)!;
-        setSelectedParty(party);
-        setEntry((prev) => ({ ...prev, billing_party: party }));
-      }
-      setPartyError("");
-      return;
-    }
-
-    if (name === "state") {
-      setState(value);
-      return;
-    }
-
     setEntry((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (val: string, mode: "select" | "search") => {
+    if (mode === "select") {
+      setState(val);
+    } else {
+      if (val === "") {
+        setSelectedParty({ _id: "", name: "", address: "", gst_no: "" });
+      setPartyError("Please select a Billing Party");
+      } else {
+        setSelectedParty(parties.find((p) => p.name === val) || selectedParty);
+        setPartyError("");
+      }
+    }
+  };
+
+  const fetchOptions = async (search: string): Promise<Option[]> => {
+    try {
+      const response = await api.get(`/billing-party/by-name/${search}`);
+      const parties = response.data.data;
+      if (parties.length > 0) {
+        const options: Option[] = parties.map((party: BillingPartyType) => ({
+          label: party.name,
+          value: party.name,
+        }));
+        return options;
+      } else {
+        return [];
+      }
+    } catch (error: any) {
+      dispatch(
+        addMessage({ type: "error", text: error.response?.data?.message })
+      );
+      return [];
+    }
   };
 
   const handleExtraChargeChange = (
@@ -292,7 +315,7 @@ const Entry: React.FC = () => {
   };
 
   const partyValidation = () => {
-    if (selectedParty.name === "none") {
+    if (selectedParty.name === "") {
       setPartyError("Please select a Billing Party");
       dispatch(
         addMessage({ type: "error", text: "Please select a Billing Party" })
@@ -343,22 +366,32 @@ const Entry: React.FC = () => {
   /** -------------------- Render Inputs -------------------- **/
   const renderInputs = (inputs: InputType[]) => {
     return inputs.map((input) => {
-      let options: string[] = input.options ? [...input.options] : [];
+      let options: Option[] = [];
+      let selectMode: "select" | "search" = "select";
       let error: string = errorsRef.current[input.name] || "";
       let value: string = String(entry[input.name as keyof EntryType] || "");
       let placeholder: string = input.label;
+      let inputRef:
+        | React.RefObject<
+            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+          >
+        | undefined = undefined;
 
       if (input.name === "billing_party") {
-        options = parties.map((party) => party.name);
         error = partyError;
         placeholder = "Select a Billing Party";
         value = selectedParty.name;
+        selectMode = "search";
+        inputRef = partyRef as React.RefObject<HTMLInputElement>;
       }
 
       if (input.name === "state") {
-        options = ["UP", "Not UP"];
         value = state;
         placeholder = "";
+        options = [
+          { label: "UP", value: "UP" },
+          { label: "Not UP", value: "Not UP" },
+        ];
       }
 
       return (
@@ -372,7 +405,11 @@ const Entry: React.FC = () => {
           placeholder={placeholder}
           options={options}
           error={error}
+          selectMode={selectMode}
+          inputRef={inputRef || undefined}
           onChange={handleChange}
+          onSelectChange={(val, mode) => handleSelectChange(val, mode)}
+          fetchOptions={fetchOptions}
         />
       );
     });
@@ -381,6 +418,7 @@ const Entry: React.FC = () => {
   /** -------------------- JSX -------------------- **/
   return (
     <div className={styles.entryFormContainer}>
+      <h1 className={styles.heading}>New Bill Entry</h1>
       <form className={styles.entryForm} onSubmit={handleSubmit}>
         <div className={styles.inputArea}>
           <FormSection title="Bill Information">
@@ -433,28 +471,32 @@ const Entry: React.FC = () => {
             <div className={styles.extraChargesSection}>
               {entry.extra_charges.map((ec) => (
                 <div key={ec._id} className={styles.extraChargeRow}>
-                  {["type", "amount", "rate", "per_amount"].map((field) => (
+                  {(
+                    Object.entries(EXTRA_CHARGE_LABELS) as [
+                      keyof ExtraCharge,
+                      string
+                    ][]
+                  ).map(([field, label]) => (
                     <input
                       key={field}
                       value={ec[field as keyof typeof ec]}
                       onChange={(e) =>
                         handleExtraChargeChange(ec._id, field, e.target.value)
                       }
-                      placeholder={
-                        field.charAt(0).toUpperCase() + field.slice(1)
-                      }
+                      placeholder={label}
                     />
                   ))}
                   <button
                     type="button"
                     onClick={() => removeExtraCharge(ec._id)}
+                    className={styles.removeExtraChargeBtn}
                   >
                     Remove
                   </button>
                 </div>
               ))}
               <button
-                className={styles.addExtraBtn}
+                className={styles.addExtraChargeBtn}
                 type="button"
                 onClick={addExtraCharge}
               >

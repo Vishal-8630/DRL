@@ -13,7 +13,8 @@
     .subLinkItem {
 
         .navLabel {
-            font-size: 0.9rem;
+            font-size: 1rem;
+            font-family: $font-link;
         }
 
         @include respond-to(md) {
@@ -28,6 +29,11 @@
                 width: 100%;
             }
         }
+    }
+
+    .navLink {
+        font-family: $font-link;
+        font-size: 1rem;
     }
 }
 
