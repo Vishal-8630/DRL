@@ -256,12 +256,22 @@
   white-space: nowrap;
 }
 
+@mixin main-heading {
+  font-family: $font-heading;
+  text-align: center;
+  @include spacing(margin, (bottom, $spacing-md), (top, $spacing-lg));
+  @include spacing(padding, (bottom, $spacing-sm));
+  border-bottom: $border-dark;
+  @include responsive-font(1.5rem, $heading-md, $heading-lg);
+  @include text-color($primary);
+}
+
 @mixin primary-btn {
   background-color: $neutral-dark;
   color: $neutral-light;
   border: none;
   @include spacing(padding, (vertical, 0.8rem), (horizontal, 1rem));
-  @include responsive-font(0.8rem, 1rem, 1.2rem);
+  @include responsive-font(0.8rem, 1rem, 1rem);
   font-family: $font-link;
   border-radius: 9px;
   cursor: pointer;

@@ -11,6 +11,7 @@ import Loading from "../../components/Loading";
 import { addMessage } from "../../features/message";
 import api from "../../api/axios";
 import { useNavigate } from "react-router-dom";
+import Button from "../../components/Button";
 
 const NewBalanceParty = () => {
   const navigate = useNavigate();
@@ -71,12 +72,16 @@ const NewBalanceParty = () => {
               error={errors.party_name}
               onChange={handleChange}
             />
+            
+          <Button
+            type="submit"
+            text="Add Balance Party"
+            variant="primary"
+            loading={loading}
+            disabled={loading}
+            className={styles.submitBtn}
+          />
           </FormSection>
-        </div>
-        <div className={styles.buttonContainer}>
-          <button type="submit" className={styles.submitBtn} disabled={loading}>
-            Add Balance Party
-          </button>
         </div>
       </form>
     </div>

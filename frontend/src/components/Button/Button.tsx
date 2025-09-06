@@ -1,5 +1,4 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import styles from "./Button.module.scss";
 
 interface ButtonProps {
@@ -27,24 +26,14 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <div className={styles.buttonContainer}>
-      <AnimatePresence>
-        <motion.button
-          type={type}
-          onClick={onClick}
-          disabled={disabled || loading}
-          className={`${styles[variantClass]} ${styles[className]}`}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          transition={{
-            duration: 0.3,
-            type: "spring",
-            stiffness: 400,
-            damping: 15,
-          }}
-        >
-          {loading ? loadingText : text}
-        </motion.button>
-      </AnimatePresence>
+      <button
+        type={type}
+        onClick={onClick}
+        disabled={disabled || loading}
+        className={`${styles[variantClass]} ${styles[className]}`}
+      >
+        {loading ? loadingText : text}
+      </button>
     </div>
   );
 };

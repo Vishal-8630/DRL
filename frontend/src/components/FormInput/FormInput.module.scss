@@ -15,7 +15,6 @@
     position: relative;
     display: flex;
     align-items: center;
-    margin-top: 5px;
 
     input,
     select,
@@ -45,6 +44,7 @@
       cursor: pointer;
       display: flex;
       align-items: center;
+      color: $neutral-dark;
     }
   }
 

@@ -1,50 +1,25 @@
-// @use '../../styles/globals' as *;
-// @use "sass:color";
-
-// .formSection {
-//   @include bg-color($secondary-bg);
-//   @include border-radius($radius-lg);
-//   @include spacing(margin, (all, $spacing-md));
-//   @include spacing(padding, (vertical, $spacing-md), (horizontal, $spacing-lg));
-//   box-shadow: $box-shadow-lg;
-//   border: $border-lg;
-
-//   @include respond-to(md) {
-//     @include spacing(margin, (all, $spacing-sm));
-//     @include spacing(padding, (all, $spacing-md));
-//   }
-// }
-
-// .sectionTitle {
-//   @include responsive-font($heading-sm, $heading-md, $heading-lg);
-//   text-align: center;
-//   letter-spacing: 0.5px;
-//   font-family: $font-heading;
-//   text-shadow: $text-shadow;
-//   border-bottom: 1px solid $neutral-light;
-//   @include spacing(margin, (bottom, $spacing-md));
-//   @include spacing(padding, (bottom, $spacing-md))
-// }
-
 @use '../../styles/globals' as *;
 
 .formSection {
-  background: #f9f9f9; // slightly off-white for contrast
-  border: 1px solid #e0e0e0; // light border to define edges
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); // slightly stronger shadow
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
   margin: 0.8rem;
 
   .sectionTitle {
     font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
     color: $primary;
     text-align: center;
+    padding-bottom: 0.8rem;
+    border-bottom: $border-dark;
+    width: 90%;
+    margin: 0 auto;
   }
 }
 
