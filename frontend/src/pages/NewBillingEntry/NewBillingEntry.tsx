@@ -249,7 +249,7 @@ const Entry: React.FC = () => {
     setEntry((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (val: string, mode: "select" | "search") => {
+  const handleSelectChange = (val: string, name: string, mode: "select" | "search") => {
     if (mode === "select") {
       setState(val);
     } else {
@@ -408,7 +408,7 @@ const Entry: React.FC = () => {
           selectMode={selectMode}
           inputRef={inputRef || undefined}
           onChange={handleChange}
-          onSelectChange={(val, mode) => handleSelectChange(val, mode)}
+          onSelectChange={(val, name, mode) => handleSelectChange(val, name, mode)}
           fetchOptions={fetchOptions}
         />
       );

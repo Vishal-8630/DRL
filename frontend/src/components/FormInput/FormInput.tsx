@@ -23,7 +23,7 @@ interface FormInputProps {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => void;
-  onSelectChange?: (val: string, mode: "select" | "search") => void;
+  onSelectChange?: (val: string, name: string, mode: "select" | "search") => void;
   fetchOptions?: (val: string) => Promise<Option[]>;
 }
 
@@ -61,12 +61,13 @@ const FormInput: React.FC<FormInputProps> = ({
       {isSelect ? (
         <SmartDropdown
           id={id}
+          name={name}
           value={value}
           mode={selectMode}
           options={options}
           placeholder={placeholder}
           inputRef={inputRef}
-          onChange={(val, mode) => onSelectChange?.(val, mode)}
+          onChange={(val, name, mode) => onSelectChange?.(val, name, mode)}
           fetchOptions={fetchOptions ?? (async () => [])}
         />
       ) : (

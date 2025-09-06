@@ -6,6 +6,7 @@ type Option = { label: string; value: string };
 
 interface Props {
   id?: string;
+  name: string;
   label?: string;
   options?: Option[];
   mode?: "select" | "search";
@@ -13,11 +14,12 @@ interface Props {
   placeholder?: string;
   inputRef?: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | undefined;
   fetchOptions?: (query: string) => Promise<Option[]>;
-  onChange: (val: string, mode: "select" | "search") => void;
+  onChange: (val: string, name: string, mode: "select" | "search") => void;
 }
 
 const SmartDropdown = ({
   id,
+  name,
   label,
   options = [],
   mode = "select",
@@ -104,7 +106,7 @@ const SmartDropdown = ({
    */
   const handleSelect = (opt: Option, mode: "select" | "search") => {
     setSelected(opt);
-    onChange(opt.value, mode);
+    onChange(opt.value, name, mode);
     setOpen(false);
     setSearch("");
   };
@@ -132,6 +134,7 @@ const SmartDropdown = ({
       ) : (
         <input
           id={id}
+          name={name}
           type="text"
           className={styles.input}
           value={search}
@@ -141,7 +144,7 @@ const SmartDropdown = ({
 
             if (val === "") {
               setSelected(null);
-              onChange("", "search");
+              onChange("", name, "search");
             }
           }}
           placeholder={placeholder}

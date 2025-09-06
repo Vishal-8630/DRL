@@ -26,6 +26,7 @@ interface InputType {
   name: string;
   options?: string[];
 }
+type Option = { label: string; value: string };
 
 const VEHICLE_INPUTS: InputType[] = [
   { type: "select", label: "Movement Type", name: "movementType" },
@@ -52,7 +53,6 @@ const PARTY_DETAIL: InputType[] = [
     name: "status",
     label: "Status",
     type: "select",
-    options: ["Pending", "Received"],
   },
 ];
 
@@ -60,6 +60,11 @@ const NewVehicleEntry = () => {
   const [vehicleEntry, setVehicleEntry] =
     useState<VehicleEntryType>(EmptyVehicleEntry);
   const [balanceParties, setBalanceParties] = useState<BalancePartyType[]>([]);
+  const [selectedBalanceParty, setSelectedBalanceParty] =
+    useState<BalancePartyType>({
+      _id: "",
+      party_name: "",
+    });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const errorsRef = useRef(errors);
 
@@ -72,8 +77,8 @@ const NewVehicleEntry = () => {
       try {
         const { data } = await api.get("/balance-party/all-balance-parties");
         setBalanceParties(data.data);
-      } catch (error) {
-        console.log(error);
+      } catch (error: any) {
+        dispatch(addMessage({ type: "error", text: error.response?.data?.message }));
       }
     };
     fetchAllBalanceParties();
@@ -108,11 +113,44 @@ const NewVehicleEntry = () => {
     setVehicleEntry((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleSelectChange = (
+    val: string,
+    name: string,
+    mode: "select" | "search"
+  ) => {
+    if (mode === "select") {
+      setVehicleEntry((prev) => ({ ...prev, [name]: val }));
+    } else {
+      if (val === "") {
+        setSelectedBalanceParty({ _id: "", party_name: "" });
+      } else {
+        const party = balanceParties.find((p) => p.party_name === val)!;
+        setVehicleEntry((prev) => ({ ...prev, balance_party: party }));
+      }
+    }
+  };
+
+  const fetchOptions = async (search: string): Promise<Option[]> => {
+    const fetchedBalanceParties = balanceParties.filter(
+      (party) =>
+        party.party_name &&
+        party.party_name
+          .toLocaleLowerCase()
+          .includes(search.toLocaleLowerCase())
+    );
+    if (fetchedBalanceParties.length > 0) {
+      const options: Option[] = fetchedBalanceParties.map((party) => ({
+        label: party.party_name,
+        value: party.party_name,
+      }));
+      return options;
+    } else return [];
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(vehicleStart());
     try {
-      console.log(vehicleEntry);
       const response = await api.post(
         "/vehicle-entry/new-vehicle-entry",
         vehicleEntry
@@ -126,7 +164,6 @@ const NewVehicleEntry = () => {
         errorsRef.current[key] = value as string;
       });
       setErrors({ ...errorsRef.current });
-      console.log(error);
       dispatch(
         addMessage({
           type: "error",
@@ -144,29 +181,36 @@ const NewVehicleEntry = () => {
 
   const renderInputs = (inputs: InputType[]) => {
     return inputs.map((input) => {
-      let options: string[] = input.options ? [...input.options] : [];
+      let options: Option[] = [];
+      let selectMode: "select" | "search" = "select";
       let value: string = String(
         vehicleEntry[input.name as keyof VehicleEntryType] || ""
       );
       let placeholder: string = input.label;
 
       if (input.name === "status") {
-        options = ["Pending", "Received"];
+        options = [
+          { label: "Pending", value: "Pending" },
+          { label: "Recieved", value: "Recieved" },
+        ];
         value = vehicleEntry.status;
         placeholder = "";
       }
 
       if (input.name === "movementType") {
-        options = ["From DRL", "To DRL"]
+        options = [
+          { label: "From DRL", value: "From DRL" },
+          { label: "To DRL", value: "To DRL" },
+        ];
         value = vehicleEntry.movementType;
         placeholder = "";
       }
 
       if (input.name === "party_name") {
-        options = balanceParties.map((party) => party.party_name);
-        value =
-          vehicleEntry.balance_party.party_name || "Select a Balance Party";
+        options = [];
+        value = vehicleEntry.balance_party.party_name;
         placeholder = "Select a Balance Party";
+        selectMode = "search";
       }
 
       return (
@@ -178,9 +222,12 @@ const NewVehicleEntry = () => {
           name={input.name}
           value={value}
           placeholder={placeholder}
+          selectMode={selectMode}
           options={options}
           error={errorsRef.current[input.name]}
           onChange={handleChange}
+          onSelectChange={handleSelectChange}
+          fetchOptions={fetchOptions}
         />
       );
     });
