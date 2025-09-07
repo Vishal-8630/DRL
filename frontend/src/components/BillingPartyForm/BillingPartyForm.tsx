@@ -1,55 +1,65 @@
 import styles from "./BillingPartyForm.module.scss";
 import type { BillingPartyType } from "../../types/party";
+import FormSection from "../FormSection";
+import FormInput from "../FormInput";
 
 interface BillingPartyFormProps {
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleInputChange: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => void;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   party: BillingPartyType;
   errors: Record<string, string>;
 }
 
-const BillingPartyForm: React.FC<BillingPartyFormProps> = ({ handleInputChange, handleSubmit, party, errors }) => {
+const BillingPartyForm: React.FC<BillingPartyFormProps> = ({
+  handleInputChange,
+  handleSubmit,
+  party,
+  errors,
+}) => {
   return (
     <div className={styles.partyFormContainer}>
       <form className={styles.partyForm} onSubmit={handleSubmit}>
-        <h2>Add Billing Party</h2>
-        <div className={styles.formGroup}>
-          <label>Billing Party Name</label>
-          <input
+        <FormSection title="Add Billing Party">
+          <FormInput
+            type="text"
+            label="Name"
+            id="name"
             name="name"
             value={party.name}
             onChange={handleInputChange}
             placeholder="Billing Party Name"
+            error={errors.name}
           />
-          {errors.name && <p className={styles.errorText}>{errors.name}</p>}
-        </div>
-        <div className={styles.formGroup}>
-          <label>Billing Party Address</label>
-          <input
+          <FormInput
+            type="text"
+            label="Address"
+            id="address"
             name="address"
             value={party.address}
             onChange={handleInputChange}
             placeholder="Billing Party Address"
+            error={errors.address}
           />
-          {errors.address && (
-            <p className={styles.errorText}>{errors.address}</p>
-          )}
-        </div>
-        <div className={styles.formGroup}>
-          <label>Billing Party GST Number</label>
-          <input
+          <FormInput
+            type="text"
+            label="GST Number"
+            id="gst_no"
             name="gst_no"
             value={party.gst_no}
             onChange={handleInputChange}
             placeholder="Billing Party GST Number"
+            error={errors.gst_no}
           />
-          {errors.gst_no && <p className={styles.errorText}>{errors.gst_no}</p>}
-        </div>
-        <div className={styles.formControl}>
-          <button className={styles.addBtn} type="submit">
-            Add Party
-          </button>
-        </div>
+          <div className={styles.formControl}>
+            <button className={styles.addBtn} type="submit">
+              Add Party
+            </button>
+          </div>
+        </FormSection>
       </form>
     </div>
   );

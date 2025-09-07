@@ -238,6 +238,7 @@ const NewVehicleEntry = () => {
   return (
     <div className={styles.vehicleFormContainer}>
       <form className={styles.vehicleForm} onSubmit={handleSubmit}>
+        <h1 className={styles.heading}>Add New Vehicle Entry</h1>
         <div className={styles.inputArea}>
           <FormSection title="Vehicle Details">
             {renderInputs(VEHICLE_INPUTS)}

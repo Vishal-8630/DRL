@@ -10,7 +10,6 @@ import BillEntriesDropdownView from "../../components/BillEntriesDropdownView";
 import type { RootState } from "../../app/store";
 import { type Variants, AnimatePresence, motion } from "framer-motion";
 import { fadeInUp, staggerContainer } from "../../animations/animations";
-import BillEntriesTableView from "../../components/BillEntriesTableView";
 import {
   buildRows,
   getHeaderLabels,
@@ -18,6 +17,7 @@ import {
 } from "../../utils/flattenEntries";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import PaginatedList from "../../components/PaginatedList";
 
 const SEARCH_MAPPING: Record<string, string> = {
   "Bill Number": "bill_no",
@@ -26,7 +26,6 @@ const SEARCH_MAPPING: Record<string, string> = {
 };
 
 const SEARCH_OPTIONS = Object.keys(SEARCH_MAPPING);
-const VIEW_OPTIONS = ["Table", "Dropdown"];
 const DEBOUNCE_DELAY = 500;
 
 const dropDownVariants: Variants = {
@@ -91,7 +90,6 @@ const Dropdown = ({
 };
 
 const BillEntries = () => {
-  const [view, setView] = useState(VIEW_OPTIONS[0]);
   const [search, setSearch] = useState("");
   const [searchParam, setSearchParam] = useState(SEARCH_OPTIONS[0]);
   const [entries, setEntries] = useState<EntryType[]>([]);
@@ -131,10 +129,6 @@ const BillEntries = () => {
     const handler = setTimeout(() => handleSearch(), DEBOUNCE_DELAY);
     return () => clearTimeout(handler);
   }, [search, searchParam]);
-
-  useEffect(() => {
-    setSearch("");
-  }, [view]);
 
   const handleSearchClear = () => {
     setSearch("");
@@ -256,40 +250,31 @@ const BillEntries = () => {
             setIsOpen={(isOpen) => setOpenDropdown(isOpen ? "search" : null)}
           />
         </div>
-
-        {/* 👤 View Switcher */}
-        {user && (
-          <Dropdown
-            options={VIEW_OPTIONS}
-            selected={view}
-            onSelect={(val) => setView(val)}
-            isOpen={openDropdown === "view"}
-            setIsOpen={(isOpen) => setOpenDropdown(isOpen ? "view" : null)}
-          />
-        )}
       </div>
 
       {/* 📄 Content Area */}
       <div className={styles.homeContent}>
-        {view === "Table" ? (
-          <BillEntriesTableView entries={entries} />
-        ) : (
-          <motion.div
-            key="dropdown-view"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-          >
-            {entries.map((entry) => (
-              <motion.div key={entry._id} variants={fadeInUp}>
-                <BillEntriesDropdownView
-                  entry={entry}
-                  onUpdate={updateOriginalEntry}
-                />
+        <PaginatedList
+          items={entries}
+          itemsPerPage={10}
+          renderItem={(entry) => {
+            return (
+              <motion.div
+                key="dropdown-view"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
+                <motion.div key={entry._id} variants={fadeInUp}>
+                  <BillEntriesDropdownView
+                    entry={entry}
+                    onUpdate={updateOriginalEntry}
+                  />
+                </motion.div>
               </motion.div>
-            ))}
-          </motion.div>
-        )}
+            );
+          }}
+        />
       </div>
 
       <button className={styles.excelBtn} onClick={handleExport}>

@@ -12,6 +12,7 @@ import { addMessage } from "../../features/message";
 import { fadeInUp, staggerContainer } from "../../animations/animations";
 import { motion } from "framer-motion";
 import Button from "../../components/Button";
+import PaginatedList from "../../components/PaginatedList";
 
 /* -------------------- Constants -------------------- */
 export const TABS = {
@@ -85,7 +86,11 @@ const BillingParty = () => {
   /* -------------------- Handlers: Add Party -------------------- */
 
   // Handle input change in Add Party form
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
 
     // Clear error for current field
@@ -102,7 +107,10 @@ const BillingParty = () => {
     dispatch(partyStart());
 
     try {
-      const response = await api.post("/billing-party/new-billing-party", party);
+      const response = await api.post(
+        "/billing-party/new-billing-party",
+        party
+      );
 
       // Success message
       dispatch(addMessage({ type: "success", text: response.data.message }));
@@ -205,27 +213,33 @@ const BillingParty = () => {
 
         {/* Party List */}
         {activeTab === TABS.LIST && (
-          <motion.div
-            key="list"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-          >
-            {parties.map((p) => (
-              <motion.div key={p._id} variants={fadeInUp}>
-                <Party
-                  key={p._id}
-                  party={p}
-                  partyState={partyStates[p._id]}
-                  updatePartyState={updatePartyState}
-                  updateDraft={updateDraft}
-                  toggleEditing={toggleEditing}
-                  toggleOpen={toggleOpen}
-                  updateOriginalParty={updateOriginalParty}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
+          <PaginatedList
+            items={parties}
+            itemsPerPage={10}
+            renderItem={(p) => {
+              return (
+                <motion.div
+                  key="list"
+                  variants={staggerContainer}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <motion.div key={p._id} variants={fadeInUp}>
+                    <Party
+                      key={p._id}
+                      party={p}
+                      partyState={partyStates[p._id]}
+                      updatePartyState={updatePartyState}
+                      updateDraft={updateDraft}
+                      toggleEditing={toggleEditing}
+                      toggleOpen={toggleOpen}
+                      updateOriginalParty={updateOriginalParty}
+                    />
+                  </motion.div>
+                </motion.div>
+              );
+            }}
+          />
         )}
       </div>
     </div>

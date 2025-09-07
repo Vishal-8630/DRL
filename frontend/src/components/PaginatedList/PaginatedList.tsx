@@ -1,5 +1,5 @@
-import React, { useState, type JSX } from 'react';
-import styles from './PaginatedList.module.scss';
+import { useState, type JSX } from "react";
+import styles from "./PaginatedList.module.scss";
 
 type PaginatedListProps<T> = {
   items: T[];
@@ -7,7 +7,11 @@ type PaginatedListProps<T> = {
   renderItem: (item: T) => JSX.Element;
 };
 
-const PaginatedList = <T,>({ items, itemsPerPage = 5, renderItem }: PaginatedListProps<T>) => {
+const PaginatedList = <T,>({
+  items,
+  itemsPerPage = 5,
+  renderItem,
+}: PaginatedListProps<T>) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -17,11 +21,13 @@ const PaginatedList = <T,>({ items, itemsPerPage = 5, renderItem }: PaginatedLis
   const totalPages = Math.ceil(items.length / itemsPerPage);
 
   return (
-    <div>
-      {currentItems.map(renderItem)}
-
+    <>
+      <div>{currentItems.map(renderItem)}</div>
       <div className={styles.pagination}>
-        <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}>
+        <button
+          onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+          disabled={currentPage === 1}
+        >
           Prev
         </button>
         <span>{currentPage}</span>
@@ -32,8 +38,8 @@ const PaginatedList = <T,>({ items, itemsPerPage = 5, renderItem }: PaginatedLis
           Next
         </button>
       </div>
-    </div>
+    </>
   );
 };
 
-export default PaginatedList
+export default PaginatedList;

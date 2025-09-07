@@ -141,45 +141,51 @@ const PartyBalance = () => {
 
       {partyVehicleEntries?.length && (
         <div className={styles.partyVehicleEntries}>
-          <table>
-            <thead>
-              <tr>
-                {(
-                  Object.entries(VEHICLE_ENTRY_LABELS) as [
-                    keyof BalancePartyType,
-                    string
-                  ][]
-                ).map(([key, label]) => {
-                  return <th key={key}>{label}</th>;
+          <div className={styles.tableWrapper}>
+            <table>
+              <thead>
+                <tr>
+                  {(
+                    Object.entries(VEHICLE_ENTRY_LABELS) as [
+                      keyof BalancePartyType,
+                      string
+                    ][]
+                  ).map(([key, label]) => {
+                    return <th key={key}>{label}</th>;
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {partyVehicleEntries.map((entry) => {
+                  pendingTotal += parseInt(entry.balance);
+                  receivedTotal += parseInt(entry.in_ac);
+                  return (
+                    <tr key={entry._id}>
+                      {(
+                        Object.entries(VEHICLE_ENTRY_LABELS) as [
+                          keyof VehicleEntryType,
+                          string
+                        ][]
+                      ).map(([key, _]) => {
+                        const value =
+                          (key as string) === "balance_party"
+                            ? entry["balance_party"].party_name
+                            : entry[key];
+                        return <td key={key}>{value as string}</td>;
+                      })}
+                    </tr>
+                  );
                 })}
-              </tr>
-            </thead>
-            <tbody>
-              {partyVehicleEntries.map((entry) => {
-                pendingTotal += parseInt(entry.balance);
-                receivedTotal += parseInt(entry.in_ac);
-                return (
-                  <tr key={entry._id}>
-                    {(
-                      Object.entries(VEHICLE_ENTRY_LABELS) as [
-                        keyof VehicleEntryType,
-                        string
-                      ][]
-                    ).map(([key, _]) => {
-                      const value =
-                        (key as string) === "balance_party"
-                          ? entry["balance_party"].party_name
-                          : entry[key];
-                      return <td key={key}>{value as string}</td>;
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
           <div className={styles.totalBalanceArea}>
-            <div className={styles.total}><span>Pending Total:</span> {pendingTotal}</div>
-            <div className={styles.total}><span>Received Total:</span> {receivedTotal}</div>
+            <div className={styles.total}>
+              <span>Pending Total:</span> {pendingTotal}
+            </div>
+            <div className={styles.total}>
+              <span>Received Total:</span> {receivedTotal}
+            </div>
           </div>
         </div>
       )}

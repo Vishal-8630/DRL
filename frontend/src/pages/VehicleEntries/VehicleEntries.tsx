@@ -14,6 +14,7 @@ import GenericFilter from "../../components/GenericFilter";
 import { vehicleEntryFilters } from "../../filters/vehicleEntryFilters";
 import { applyGenericFilters } from "../../filters/filerHelper";
 import Overlay from "../../components/Overlay";
+import PaginatedList from "../../components/PaginatedList";
 
 type VehicleState = {
   localVehicleEntry: VehicleEntryType;
@@ -153,7 +154,12 @@ const VehicleEntries = () => {
             Filter
           </motion.button>
           {isFilterOpen && (
-            <Overlay onCancel={() => {setIsFilterOpen(false); console.log("Clicked")}}>
+            <Overlay
+              onCancel={() => {
+                setIsFilterOpen(false);
+                console.log("Clicked");
+              }}
+            >
               <GenericFilter
                 filters={vehicleEntryFilters}
                 onApply={(values) => onApplyFilter(values)}
@@ -162,19 +168,25 @@ const VehicleEntries = () => {
             </Overlay>
           )}
         </div>
-        {filteredEntries.map((v) => (
-          <motion.div key={v._id} variants={fadeInUp}>
-            <VehicleEntryDropdown
-              vehicleEntry={v}
-              vehicleState={vehicleStates[v._id]}
-              updateVehicleState={updateVehicleState}
-              updateDraft={updateDraft}
-              toggleEditing={toggleEditing}
-              toggleOpen={toggleOpen}
-              updateOriginalVehicleEntry={updateOriginalVehicleEntry}
-            />
-          </motion.div>
-        ))}
+        <PaginatedList
+          items={filteredEntries}
+          itemsPerPage={10}
+          renderItem={(v) => {
+            return (
+              <motion.div key={v._id} variants={fadeInUp}>
+                <VehicleEntryDropdown
+                  vehicleEntry={v}
+                  vehicleState={vehicleStates[v._id]}
+                  updateVehicleState={updateVehicleState}
+                  updateDraft={updateDraft}
+                  toggleEditing={toggleEditing}
+                  toggleOpen={toggleOpen}
+                  updateOriginalVehicleEntry={updateOriginalVehicleEntry}
+                />
+              </motion.div>
+            );
+          }}
+        />
       </motion.div>
     </div>
   );

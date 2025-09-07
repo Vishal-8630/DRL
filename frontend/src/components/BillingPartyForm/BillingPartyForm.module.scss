@@ -1,24 +1,14 @@
 @use '../../styles/globals' as *;
 
 .partyFormContainer {
+    @include flex-center();
     color: $neutral-light;
     width: 100%;
-    margin-top: 7rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    flex: 1;
+    height: 100%;
 
     .partyForm {
-        background: $neutral-dark;
-        padding: 2rem;
-        border-radius: 8px;
-        width: 100%;
-        max-width: 35rem;
-
-        h2 {
-            text-align: center;
-            margin: 0 0 2rem 0;
-        }
+        width: 35rem;
     }
 }
 
@@ -48,12 +38,10 @@
 .formControl {
     width: 100%;
     text-align: center;
-    margin-top: 3rem;
+    margin-top: 2rem;
 
     .addBtn {
-        @include button-style($primary, $neutral-light, $h-padding: 0.8rem, $v-padding: 3rem);
-        max-width: 40%;
-        font-size: 1rem;
-        letter-spacing: 0.3px;
+       @include primary-btn();
+       min-width: 50%;
     }
 }

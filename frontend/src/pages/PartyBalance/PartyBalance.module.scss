@@ -12,7 +12,6 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 70%;
         margin: 0 auto;
     }
 
@@ -21,6 +20,8 @@
         position: relative;
         display: inline-block;
         margin-right: 1.5rem;
+        width: 60%;
+        max-width: 35rem;
 
         input {
             width: 100%;
@@ -29,14 +30,14 @@
             color: $neutral-dark;
             border-radius: 50px;
             padding: 0.8rem 1.2rem;
-            width: 35rem;
+            @include responsive-font(0.8rem, 0.8rem, 1rem);
         }
 
         .cancelBtn {
             color: lighten($neutral-dark, 20%);
             font-size: 1.3rem;
             position: absolute;
-            right: 0.8rem;
+            right: 1rem;
             top: 50%;
             transform: translateY(-50%);
             display: flex;
@@ -44,6 +45,7 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s ease-in-out;
+            @include responsive-font(0.8rem, 0.8rem, 1rem);
 
             &:hover {
                 color: $neutral-dark;
@@ -62,6 +64,7 @@
         cursor: pointer;
         max-width: 8rem;
         width: 20%;
+        @include responsive-font(0.8rem, 0.8rem, 1rem);
     }
 }
 
@@ -96,19 +99,24 @@
 }
 
 .partyBalanceContainer {
+    .tableWrapper {
+        overflow-x: auto;
+    }
+
     table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 2rem;
         font-size: 0.95rem;
         border-radius: 8px;
-        overflow: hidden; // for rounded corners
 
         th,
         td {
             border: 1px solid #ddd;
             padding: 0.75rem 1rem;
             text-align: center;
+            min-width: 150px;
+            @include responsive-font(0.8rem, 1rem, 1rem);
         }
 
         th {
@@ -131,6 +139,7 @@
     margin-top: 2rem;
     width: 100%;
     text-align: right;
+    @include responsive-font(0.8rem, 1rem, 1rem);
 
     .total {
         display: flex;
@@ -143,6 +152,7 @@
             font-size: 1.2rem;
             font-weight: bold;
             color: $brand-color;
+    @include responsive-font(0.8rem, 1rem, 1rem);
         }
     }
 }

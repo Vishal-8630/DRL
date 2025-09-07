@@ -1,7 +1,6 @@
 import React from "react";
 import {
   ENTRY_LABELS,
-  EXTRA_CHARGE_LABELS,
   type EntryType,
   type ExtraCharge,
 } from "../../types/entry";
