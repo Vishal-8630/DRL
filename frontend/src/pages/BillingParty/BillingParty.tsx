@@ -13,6 +13,8 @@ import { fadeInUp, staggerContainer } from "../../animations/animations";
 import { motion } from "framer-motion";
 import Button from "../../components/Button";
 import PaginatedList from "../../components/PaginatedList";
+import { BillingPartyFilters } from "../../filters/BillingPartyFilters";
+import FilterContainer from "../../components/FilterContainer";
 
 /* -------------------- Constants -------------------- */
 export const TABS = {
@@ -53,6 +55,9 @@ const BillingParty = () => {
   const [partyStates, setPartyStates] = useState<Record<string, PartyState>>(
     {}
   );
+  const [filteredParties, setFilteredParties] = useState<BillingPartyType[]>(
+    []
+  );
 
   /* -------------------- Effects -------------------- */
 
@@ -82,6 +87,10 @@ const BillingParty = () => {
 
     fetchAllParties();
   }, [activeTab]);
+
+  useEffect(() => {
+    setFilteredParties(parties);
+  }, [parties]);
 
   /* -------------------- Handlers: Add Party -------------------- */
 
@@ -187,16 +196,25 @@ const BillingParty = () => {
     <div className={styles.partyContainer}>
       {/* Tab Switcher */}
       <div className={styles.buttonGroup}>
-        <Button
-          text="Add Billing Party"
-          variant="primary"
-          onClick={() => setActiveTab(TABS.FORM)}
-        />
-        <Button
-          text="View Billing Parties"
-          variant="primary"
-          onClick={() => setActiveTab(TABS.LIST)}
-        />
+        <div className={styles.pageButtons}>
+          <Button
+            text="Add Billing Party"
+            variant="primary"
+            onClick={() => setActiveTab(TABS.FORM)}
+          />
+          <Button
+            text="View Billing Parties"
+            variant="primary"
+            onClick={() => setActiveTab(TABS.LIST)}
+          />
+        </div>
+        {activeTab === TABS.LIST && (
+          <FilterContainer
+            data={parties}
+            filters={BillingPartyFilters}
+            onFiltered={setFilteredParties}
+          />
+        )}
       </div>
 
       {/* Frame Container */}
@@ -213,33 +231,36 @@ const BillingParty = () => {
 
         {/* Party List */}
         {activeTab === TABS.LIST && (
-          <PaginatedList
-            items={parties}
-            itemsPerPage={10}
-            renderItem={(p) => {
-              return (
-                <motion.div
-                  key="list"
-                  variants={staggerContainer}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  <motion.div key={p._id} variants={fadeInUp}>
-                    <Party
-                      key={p._id}
-                      party={p}
-                      partyState={partyStates[p._id]}
-                      updatePartyState={updatePartyState}
-                      updateDraft={updateDraft}
-                      toggleEditing={toggleEditing}
-                      toggleOpen={toggleOpen}
-                      updateOriginalParty={updateOriginalParty}
-                    />
+          <>
+            <h1 className={styles.heading}>All Billing Parties</h1>
+            <PaginatedList
+              items={filteredParties}
+              itemsPerPage={10}
+              renderItem={(p) => {
+                return (
+                  <motion.div
+                    key={p._id}
+                    variants={staggerContainer}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    <motion.div key={p._id} variants={fadeInUp}>
+                      <Party
+                        key={p._id}
+                        party={p}
+                        partyState={partyStates[p._id]}
+                        updatePartyState={updatePartyState}
+                        updateDraft={updateDraft}
+                        toggleEditing={toggleEditing}
+                        toggleOpen={toggleOpen}
+                        updateOriginalParty={updateOriginalParty}
+                      />
+                    </motion.div>
                   </motion.div>
-                </motion.div>
-              );
-            }}
-          />
+                );
+              }}
+            />
+          </>
         )}
       </div>
     </div>

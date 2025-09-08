@@ -10,6 +10,9 @@ import { fadeInUp, staggerContainer } from "../../animations/animations";
 import BalancePartyDropDown from "../../components/BalancePartyDropDown";
 import styles from "./BalanceParties.module.scss";
 import PaginatedList from "../../components/PaginatedList";
+import FilterContainer from "../../components/FilterContainer";
+import Loading from "../../components/Loading";
+import { BalancePartyFilters } from "../../filters/BalancePartyFilters";
 
 type balancePartyState = {
   localBalanceParty: BalancePartyType;
@@ -26,6 +29,9 @@ const BalanceParties = () => {
   const [balancePartyStates, setBalancePartyStates] = useState<
     Record<string, balancePartyState>
   >({});
+  const [filteredBalanceParties, setFilteredBalanceParties] = useState<
+    BalancePartyType[]
+  >([]);
 
   useEffect(() => {
     const fetchAllBalanceParties = async () => {
@@ -59,6 +65,10 @@ const BalanceParties = () => {
 
     fetchAllBalanceParties();
   }, []);
+
+  useEffect(() => {
+    setFilteredBalanceParties(balanceParties);
+  }, [balanceParties]);
 
   const updateBalancePartyState = (
     id: string,
@@ -113,6 +123,8 @@ const BalanceParties = () => {
     );
   };
 
+  if (loading) return <Loading />;
+
   return (
     <div>
       <motion.div
@@ -122,23 +134,33 @@ const BalanceParties = () => {
         initial="hidden"
         animate="visible"
       >
-        <PaginatedList
-          items={balanceParties}
-          itemsPerPage={10}
-          renderItem={(p) => (
-            <motion.div key={p._id} variants={fadeInUp}>
-              <BalancePartyDropDown
-                balanceParty={p}
-                balancePartyState={balancePartyStates[p._id]}
-                updateBalancePartyState={updateBalancePartyState}
-                updateDraft={updateDraft}
-                toggleEditing={toggleEditing}
-                toggleOpen={toggleOpen}
-                updateOriginalBalanceParty={updateOriginalBalanceParty}
-              />
-            </motion.div>
-          )}
-        />
+        <div className={styles.headerArea}>
+          <FilterContainer
+            data={balanceParties}
+            filters={BalancePartyFilters}
+            onFiltered={setFilteredBalanceParties}
+          />
+        </div>
+        <section>
+          <h1 className={styles.heading}>All Balance Parties</h1>
+          <PaginatedList
+            items={filteredBalanceParties}
+            itemsPerPage={10}
+            renderItem={(p) => (
+              <motion.div key={p._id} variants={fadeInUp}>
+                <BalancePartyDropDown
+                  balanceParty={p}
+                  balancePartyState={balancePartyStates[p._id]}
+                  updateBalancePartyState={updateBalancePartyState}
+                  updateDraft={updateDraft}
+                  toggleEditing={toggleEditing}
+                  toggleOpen={toggleOpen}
+                  updateOriginalBalanceParty={updateOriginalBalanceParty}
+                />
+              </motion.div>
+            )}
+          />
+        </section>
       </motion.div>
     </div>
   );

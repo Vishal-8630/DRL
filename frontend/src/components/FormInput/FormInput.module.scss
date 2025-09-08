@@ -23,6 +23,11 @@
       @include primary-input();
     }
 
+    textarea {
+      resize: vertical;
+      min-height: 4rem;
+    }
+
     .withIcon {
       padding-left: 2.5rem;
     }

@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState, type RefObject } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 
 import api from "../../api/axios";
 import { entryStart, entrySuccess, entryFailure } from "../../features/entry";

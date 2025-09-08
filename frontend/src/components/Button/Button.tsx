@@ -23,6 +23,7 @@ const Button: React.FC<ButtonProps> = ({
   variant = "primary",
 }) => {
   const variantClass = variant === "primary" ? "primaryBtn" : "secondaryBtn";
+  const stylesWithClassName = `${styles[variantClass]} ${className}`;
 
   return (
     <div className={styles.buttonContainer}>
@@ -30,7 +31,7 @@ const Button: React.FC<ButtonProps> = ({
         type={type}
         onClick={onClick}
         disabled={disabled || loading}
-        className={`${styles[variantClass]} ${styles[className]}`}
+        className={stylesWithClassName}
       >
         {loading ? loadingText : text}
       </button>

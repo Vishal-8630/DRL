@@ -11,10 +11,11 @@ import VehicleEntryDropdown from "../../components/VehicleEntryDropdown";
 import { addMessage } from "../../features/message";
 import styles from "./VehicleEntries.module.scss";
 import GenericFilter from "../../components/GenericFilter";
-import { vehicleEntryFilters } from "../../filters/vehicleEntryFilters";
+import { VehicleEntryFilters } from "../../filters/vehicleEntryFilters";
 import { applyGenericFilters } from "../../filters/filerHelper";
 import Overlay from "../../components/Overlay";
 import PaginatedList from "../../components/PaginatedList";
+import FilterContainer from "../../components/FilterContainer";
 
 type VehicleState = {
   localVehicleEntry: VehicleEntryType;
@@ -119,19 +120,6 @@ const VehicleEntries = () => {
     );
   };
 
-  const onApplyFilter = (values: Record<string, any>) => {
-    const hasFilters = Object.values(values).some(
-      (val) =>
-        val != null &&
-        val !== "" &&
-        !(Array.isArray(val) && val.every((v) => !v))
-    );
-    const result = hasFilters
-      ? applyGenericFilters(vehicleEntries, values, vehicleEntryFilters)
-      : vehicleEntries;
-    setFilteredEntries(result);
-  };
-
   if (loading) return <Loading />;
 
   return (
@@ -143,50 +131,35 @@ const VehicleEntries = () => {
         initial="hidden"
         animate="visible"
       >
-        <div className={styles.filterContainer}>
-          <motion.button
-            className={styles.filterButton}
-            onClick={() => setIsFilterOpen(true)}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-          >
-            Filter
-          </motion.button>
-          {isFilterOpen && (
-            <Overlay
-              onCancel={() => {
-                setIsFilterOpen(false);
-                console.log("Clicked");
-              }}
-            >
-              <GenericFilter
-                filters={vehicleEntryFilters}
-                onApply={(values) => onApplyFilter(values)}
-                onCancel={() => setIsFilterOpen(false)}
-              />
-            </Overlay>
-          )}
+        <div className={styles.headerArea}>
+          <FilterContainer
+            data={vehicleEntries}
+            filters={VehicleEntryFilters}
+            onFiltered={setFilteredEntries}
+          />
         </div>
-        <PaginatedList
-          items={filteredEntries}
-          itemsPerPage={10}
-          renderItem={(v) => {
-            return (
-              <motion.div key={v._id} variants={fadeInUp}>
-                <VehicleEntryDropdown
-                  vehicleEntry={v}
-                  vehicleState={vehicleStates[v._id]}
-                  updateVehicleState={updateVehicleState}
-                  updateDraft={updateDraft}
-                  toggleEditing={toggleEditing}
-                  toggleOpen={toggleOpen}
-                  updateOriginalVehicleEntry={updateOriginalVehicleEntry}
-                />
-              </motion.div>
-            );
-          }}
-        />
+        <>
+          <h1 className={styles.heading}>All Vehicle Entries</h1>
+          <PaginatedList
+            items={filteredEntries}
+            itemsPerPage={10}
+            renderItem={(v) => {
+              return (
+                <motion.div key={v._id} variants={fadeInUp}>
+                  <VehicleEntryDropdown
+                    vehicleEntry={v}
+                    vehicleState={vehicleStates[v._id]}
+                    updateVehicleState={updateVehicleState}
+                    updateDraft={updateDraft}
+                    toggleEditing={toggleEditing}
+                    toggleOpen={toggleOpen}
+                    updateOriginalVehicleEntry={updateOriginalVehicleEntry}
+                  />
+                </motion.div>
+              );
+            }}
+          />
+        </>
       </motion.div>
     </div>
   );

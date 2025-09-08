@@ -2,13 +2,14 @@
 @use "sass:color";
 
 .buttonContainer {
-    width: 100%;
     display: flex;
     justify-content: center;
-    margin-top: 0.3rem;
 }
 
 .primaryBtn {
     @include primary-btn();
-    min-width: 50%;
+}
+
+.secondaryBtn {
+    @include secondary-btn();
 }

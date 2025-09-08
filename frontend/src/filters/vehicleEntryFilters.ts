@@ -1,7 +1,7 @@
 import type { VehicleEntryType } from "../types/vehicle";
 import type { FilterConfig } from "./filter";
 
-export const vehicleEntryFilters: FilterConfig<VehicleEntryType>[] = [
+export const VehicleEntryFilters: FilterConfig<VehicleEntryType>[] = [
   { field: "date", type: "sort", label: "Sort By Date" },
   { field: "date", type: "greater", label: "Date >" },
   { field: "date", type: "less", label: "Date <" },
