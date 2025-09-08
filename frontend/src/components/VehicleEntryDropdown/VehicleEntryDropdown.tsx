@@ -126,15 +126,6 @@ const VehicleEntryDropdown: React.FC<VehicleEntryDropdownProps> = ({
     }
   };
 
-  // useEffect(() => {
-  //   if (vehicleEntry.from.includes("Agra")) {
-  //     console.log("Vehicle Entry: ", vehicleEntry, "Vehicle Local Entry: ", vehicleState.localVehicleEntry);
-  //     console.log(JSON.stringify(vehicleEntry) === JSON.stringify(vehicleState.localVehicleEntry));
-  //     console.log("Vehicle Entry: ", JSON.stringify(vehicleEntry));
-  //     console.log("Vehicle Local Entry: ", JSON.stringify(vehicleState.localVehicleEntry));
-  //   }
-  // }, []);
-
   const hasChanges =
     JSON.stringify(vehicleState.localVehicleEntry) !==
     JSON.stringify(vehicleEntry);
@@ -146,25 +137,33 @@ const VehicleEntryDropdown: React.FC<VehicleEntryDropdownProps> = ({
         onClick={() => toggleOpen(vehicleEntry._id)}
       >
         <div className={styles.title}>
-          <span className={styles.headingLabel}>Date: </span>
-          <span className={styles.headingValue}>
-            {formatDate(new Date(vehicleState.localVehicleEntry.date)) || "—"}
-          </span>
-          <span>|</span>
-          <span className={styles.headingLabel}>Vehicle Number:</span>
-          <span className={styles.headingValue}>
-            {vehicleState.localVehicleEntry.vehicle_no || "—"}
-          </span>
-          <span>|</span>
-          <span className={styles.headingLabel}>From:</span>
-          <span className={styles.headingValue}>
-            {vehicleState.localVehicleEntry.from || "—"}
-          </span>
-          <span>|</span>
-          <span className={styles.headingLabel}>To: </span>
-          <span className={styles.headingValue}>
-            {vehicleState.localVehicleEntry.to || "—"}
-          </span>
+          <div>
+            <span className={styles.headingLabel}>Date: </span>
+            <span className={styles.headingValue}>
+              {formatDate(new Date(vehicleState.localVehicleEntry.date)) || "—"}
+            </span>
+            <span>|</span>
+          </div>
+          <div>
+            <span className={styles.headingLabel}>Vehicle Number:</span>
+            <span className={styles.headingValue}>
+              {vehicleState.localVehicleEntry.vehicle_no || "—"}
+            </span>
+            <span>|</span>
+          </div>
+          <div>
+            <span className={styles.headingLabel}>From:</span>
+            <span className={styles.headingValue}>
+              {vehicleState.localVehicleEntry.from || "—"}
+            </span>
+            <span>|</span>
+          </div>
+          <div>
+            <span className={styles.headingLabel}>To: </span>
+            <span className={styles.headingValue}>
+              {vehicleState.localVehicleEntry.to || "—"}
+            </span>
+          </div>
         </div>
         <span className={styles.icon}>
           {vehicleState.isOpen ? <FaChevronUp /> : <FaChevronDown />}
@@ -208,12 +207,14 @@ const VehicleEntryDropdown: React.FC<VehicleEntryDropdownProps> = ({
                   : isBalanceParty
                   ? vehicleState.localVehicleEntry["balance_party"].party_name
                   : isKeyDate(key)
-                  ? formatDate(new Date(vehicleState.localVehicleEntry[key] as string))
+                  ? formatDate(
+                      new Date(vehicleState.localVehicleEntry[key] as string)
+                    )
                   : vehicleState.localVehicleEntry[key] ?? "—";
 
                 return (
                   <div key={key} className={styles.row}>
-                    <div className={styles.label}>{label}</div>
+                    <div className={styles.label}>{label} : -</div>
 
                     {isEditing ? (
                       <div className={styles.editArea}>

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import styles from "./BillingParty.module.scss";
 import BillingPartyForm from "../../components/BillingPartyForm";
-import Party from "../../components/Party";
 import { useSelector, useDispatch } from "react-redux";
 import { selectPartyLoading } from "../../features/party/partySelectros";
 import Loading from "../../components/Loading";
@@ -15,6 +14,7 @@ import Button from "../../components/Button";
 import PaginatedList from "../../components/PaginatedList";
 import { BillingPartyFilters } from "../../filters/BillingPartyFilters";
 import FilterContainer from "../../components/FilterContainer";
+import BillingPartyDropdown from "../../components/BillingPartyDropdown";
 
 /* -------------------- Constants -------------------- */
 export const TABS = {
@@ -245,7 +245,7 @@ const BillingParty = () => {
                     animate="visible"
                   >
                     <motion.div key={p._id} variants={fadeInUp}>
-                      <Party
+                      <BillingPartyDropdown
                         key={p._id}
                         party={p}
                         partyState={partyStates[p._id]}

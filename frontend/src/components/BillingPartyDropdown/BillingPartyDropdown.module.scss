@@ -1,14 +1,13 @@
-@use '../../styles/globals' as *;
+@use "../../styles/globals" as *; // if you have mixins/variables; safe to remove if not used
 
 .container {
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 8px;
   background: $primary-bg; // dark card
   color: #e8eaf0;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-  overflow: hidden;
-  max-width: 80%;
-  margin: 0 auto 10px auto;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  width: 100%;
+  margin-bottom: 10px;
 }
 
 .header {
@@ -17,14 +16,18 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
   border: 0;
   cursor: pointer;
   text-align: left;
   color: white;
 
   &:hover {
-    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+  }
+
+  @include respond-to(sm) {
+    padding: 14px 10px;
   }
 }
 
@@ -32,6 +35,10 @@
   display: flex;
   gap: 10px;
   align-items: baseline;
+
+  @include respond-to(sm) {
+    gap: 5px;
+  }
 }
 
 .headingLabel {
@@ -39,16 +46,28 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   opacity: 0.7;
+
+  @include responsive-font(0.8rem, 1rem, 1rem);
 }
 
 .headingValue {
   font-size: 18px;
   font-weight: 700;
+
+  @include responsive-font(0.8rem, 1rem, 1rem);
+}
+
+.icon {
+  @include responsive-font(0.8rem, 1rem, 1rem);
 }
 
 .list {
   background-color: $secondary-bg;
   padding: 0 20px 0 20px;
+
+  @include respond-to(sm) {
+    padding: 0 10px 0 10px;
+  }
 }
 
 .row {
@@ -58,17 +77,24 @@
   align-items: center;
   padding: 10px 8px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 
   &:hover {
-    background: rgba(255,255,255,0.04);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  @include respond-to(sm) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
 .label {
   font-size: 13px;
   opacity: 0.8;
+  @include responsive-font(0.8rem, 1rem, 1rem);
 }
 
 .chargeTitle {
@@ -80,6 +106,7 @@
   font-size: 14px;
   line-height: 1.45;
   word-break: break-word;
+  @include responsive-font(0.8rem, 1rem, 1rem);
 }
 
 .valueText {
@@ -111,15 +138,16 @@
   font-size: 12px;
   padding: 6px 10px;
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.18);
-  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
   color: #e8eaf0;
   cursor: pointer;
   transition: transform 120ms ease, background 160ms ease;
 
   &:hover {
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
   }
+
   &:active {
     transform: translateY(1px);
   }
@@ -161,10 +189,10 @@
 }
 
 .input {
-  min-width: 240px;
+  width: 100%;
   flex: 1 1 260px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   color: #e8eaf0;
   border-radius: 10px;
   padding: 8px 10px;
@@ -172,7 +200,7 @@
 
   &:focus {
     border-color: rgba(92, 225, 151, 0.6);
-    box-shadow: 0 0 0 4px rgba(92,225,151,0.12);
+    box-shadow: 0 0 0 4px rgba(92, 225, 151, 0.12);
   }
 }
 
@@ -195,12 +223,12 @@
 }
 
 .extraItem {
-  border: 1px dashed rgba(255,255,255,0.18);
+  border: 1px dashed rgba(255, 255, 255, 0.18);
   border-radius: 10px;
   padding: 8px;
   display: grid;
   gap: 6px;
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .kv {
@@ -208,10 +236,12 @@
   grid-template-columns: 140px 1fr;
   gap: 8px;
 }
+
 .k {
   opacity: 0.7;
   font-size: 12px;
 }
+
 .v {
   font-size: 13px;
 }

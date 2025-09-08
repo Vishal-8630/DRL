@@ -1,6 +1,6 @@
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { PARTY_LABELS, type BillingPartyType } from "../../types/party";
-import styles from "./Party.module.scss";
+import styles from "./BillingPartyDropdown.module.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { selectAuthLoading } from "../../features/auth/authSelectors";
 import { partyFailure, partyStart, partySuccess } from "../../features/party";
@@ -37,7 +37,7 @@ const dropDownVariants: Variants = {
   exit: { height: 0, transition: { duration: 0.3, ease: "easeInOut" } },
 };
 
-const Party: React.FC<PartyProps> = ({
+const BillingPartyDropdown: React.FC<PartyProps> = ({
   party,
   partyState,
   updatePartyState,
@@ -213,4 +213,4 @@ const Party: React.FC<PartyProps> = ({
   );
 };
 
-export default Party;
+export default BillingPartyDropdown;

@@ -30,12 +30,11 @@
 }
 
 .frameContainer {
-    min-width: 35rem;
-    height: 70vh;
     width: 100%;
 
     .heading {
         text-align: center;
         @include spacing(margin, (bottom, 1.5rem));
+        @include responsive-font(1.3rem, 1.5rem, 2rem);
     }
 }

@@ -4,10 +4,9 @@ import { FaTimes, FaSearch, FaChevronDown } from "react-icons/fa";
 import type { EntryType } from "../../types/entry";
 import api from "../../api/axios";
 import Loading from "../../components/Loading";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { addMessage } from "../../features/message";
 import BillEntriesDropdownView from "../../components/BillEntriesDropdownView";
-import type { RootState } from "../../app/store";
 import { type Variants, AnimatePresence, motion } from "framer-motion";
 import { fadeInUp, staggerContainer } from "../../animations/animations";
 import {
@@ -99,7 +98,6 @@ const BillEntries = () => {
   );
 
   const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.auth.user);
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -260,7 +258,7 @@ const BillEntries = () => {
           renderItem={(entry) => {
             return (
               <motion.div
-                key="dropdown-view"
+                key={entry._id}
                 variants={staggerContainer}
                 initial="hidden"
                 animate="visible"
