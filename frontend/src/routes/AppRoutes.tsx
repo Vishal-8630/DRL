@@ -16,6 +16,7 @@ import BalanceParties from "../pages/BalanceParties";
 import PartyBalance from "../pages/PartyBalance";
 import BillEntries from "../pages/BillEntries";
 import PagesOutlet from "../pages/PagesOutlet";
+import AdminRoutes from "../components/AdminRoutes";
 
 const billEntryRoutes = [
   { path: "new-entry", element: <NewBillingEntry /> },
@@ -30,15 +31,23 @@ const vehicleEntryRoutes = [
   { path: "all-vehicle-entries", element: <VehicleEntries /> },
   { path: "new-balance-party", element: <NewBalanceParty /> },
   { path: "all-balance-parties", element: <BalanceParties /> },
-  { path: "party-balance", element: <PartyBalance /> }
-]
+  { path: "party-balance", element: <PartyBalance /> },
+];
 
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+
+      <Route
+        path="/register"
+        element={
+          <AdminRoutes>
+            <Register />
+          </AdminRoutes>
+        }
+      />
 
       <Route
         path="/profile"

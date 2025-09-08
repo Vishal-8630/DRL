@@ -80,9 +80,6 @@ const Register: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const loading = useSelector(selectAuthLoading);
-  const user = useSelector(selectUser);
-
-  if (user) return <Navigate to="/" replace />;
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>

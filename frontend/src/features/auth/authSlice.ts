@@ -5,6 +5,7 @@ interface User {
   username: string;
   email: string;
   fullname: string;
+  isAdmin: string;
 }
 
 interface AuthState {

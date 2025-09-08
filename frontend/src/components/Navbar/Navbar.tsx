@@ -120,12 +120,10 @@ const Navbar = () => {
             ],
           },
           { to: "/profile", label: "Profile" },
+          ...(user.isAdmin ? [{ to: "/register", label: "Add User" }] : []),
           { to: "/logout", label: "Logout", onClick: handleLogout },
         ]
-      : [
-          { to: "/login", label: "Login" },
-          { to: "/register", label: "Register" },
-        ]),
+      : [{ to: "/login", label: "Login" }]),
   ];
 
   return (
@@ -138,34 +136,30 @@ const Navbar = () => {
         <div className={styles.brand}>
           <div className={styles.drl}>DRL</div>
         </div>
-
-        <AnimatePresence>
-          <motion.ul
-            className={styles.links}
-            variants={{
-              hidden: { opacity: isMobile ? 0 : 1, y: isMobile ? -500 : 0 },
-              visible: { opacity: 1, y: 0 },
-              exit: { opacity: isMobile ? 0 : 1, y: isMobile ? -500 : 0 },
-            }}
-            initial="hidden"
-            animate={isNavOpen ? "visible" : "hidden"}
-            exit="exit"
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-          >
-            {links.map((link) => (
-              <NavButton
-                key={link.label}
-                link={{
-                  ...link,
-                  icon: link.icon,
-                  onClick: link.onClick,
-                  setIsNavOpen: () => setIsNavOpen(false),
-                  subLinks: link.subLinks,
-                }}
-              />
-            ))}
-          </motion.ul>
-        </AnimatePresence>
+        <motion.ul
+          className={styles.links}
+          variants={{
+            hidden: { opacity: isMobile ? 0 : 1, y: isMobile ? -500 : 0 },
+            visible: { opacity: 1, y: 0 },
+          }}
+          initial="hidden"
+          animate={isNavOpen ? "visible" : "hidden"}
+          exit="exit"
+          transition={{ duration: 0.4, ease: "easeInOut" }}
+        >
+          {links.map((link) => (
+            <NavButton
+              key={link.label}
+              link={{
+                ...link,
+                icon: link.icon,
+                onClick: link.onClick,
+                setIsNavOpen: () => setIsNavOpen(false),
+                subLinks: link.subLinks,
+              }}
+            />
+          ))}
+        </motion.ul>
         <div className={styles.burger} onClick={() => setIsNavOpen(!isNavOpen)}>
           <motion.span
             animate={isNavOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
