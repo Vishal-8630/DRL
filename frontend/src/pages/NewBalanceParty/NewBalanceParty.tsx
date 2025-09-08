@@ -1,65 +1,59 @@
-import React from "react";
-import styles from "./NewBalanceParty.module.scss";
-import FormSection from "../../components/FormSection";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
-import { selectBalancePartyLoading } from "../../features/balanceParty/balancePartySelectors";
-import FormInput from "../../components/FormInput";
-import type { BalancePartyType } from "../../types/vehicle";
-import { balancePartyFailure, balancePartyStart, balancePartySuccess } from "../../features/balanceParty";
-import Loading from "../../components/Loading";
-import { addMessage } from "../../features/message";
-import api from "../../api/axios";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import Button from "../../components/Button";
 
-const NewBalanceParty = () => {
+import type { BalancePartyType } from "../../types/balanceParty";
+import type { AppDispatch } from "../../app/store";
+
+import styles from "./NewBalanceParty.module.scss";
+
+import FormSection from "../../components/FormSection";
+import FormInput from "../../components/FormInput";
+import Button from "../../components/Button";
+import Loading from "../../components/Loading";
+
+import { EmptyBalanceParty } from "../../types/balanceParty";
+import { addBalancePartyAsync, selectBalancePartyLoading } from "../../features/balanceParty";
+import { addMessage } from "../../features/message";
+
+const NewBalanceParty: React.FC = () => {
+  /* --------------------- Redux & Navigation --------------------- */
+  const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const loading = useSelector(selectBalancePartyLoading);
 
-  const [balanceParty, setBalanceParty] = React.useState<BalancePartyType>({
-    _id: "",
-    party_name: "",
-  });
-  const [errors, setErrors] = React.useState<Record<string, string>>({});
+  /* -------------------- Local State ---------------------------- */
+  const [balanceParty, setBalanceParty] = useState<Omit<BalancePartyType, "_id">>(EmptyBalanceParty);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
+  /* ------------------- Handle Change -------------------------- */
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    if (errors[name as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+    setErrors((prev) => ({ ...prev, [name]: "" }));
     setBalanceParty((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  /* ------------------ Handle form submit ----------------------- */
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(balancePartyStart());
-    try {
-        const response = await api.post("/balance-party/new-balance-party", balanceParty);
-        const data = response.data;
-        dispatch(addMessage({ type: "success", text: data.message }));
-        dispatch(balancePartySuccess());
-        navigate('/vehicle-entry/all-balance-parties');
-    } catch (error: any) {
-        const errors = error.response?.data?.errors;
-        if (errors) {
-            console.log(errors);
-            setErrors(error.response.data.errors);
-        }
-        dispatch(balancePartyFailure());
+    const resultAction = await dispatch(addBalancePartyAsync(balanceParty));
+
+    if (addBalancePartyAsync.fulfilled.match(resultAction)) {
+      dispatch(addMessage({ type: "success", text: "Balance Party added successfully" }));
+      navigate("/vehicle-entry/all-balance-parties");
+    } else if (addBalancePartyAsync.rejected.match(resultAction)) {
+      dispatch(addMessage({
+        type: "error",
+        text: resultAction.payload || "Failed to add balance party",
+      }));
     }
   };
 
-  if (loading) <Loading />
+  if (loading) return <Loading />;
 
   return (
     <div className={styles.balancePartyFormContainer}>
-      <form className={styles.balancePartyForm} onSubmit={handleSubmit}>
+      <form className={styles.balancePartyForm} onSubmit={handleFormSubmit}>
         <div className={styles.inputArea}>
           <FormSection title="New Balance Party">
             <FormInput
@@ -70,17 +64,17 @@ const NewBalanceParty = () => {
               value={balanceParty.party_name}
               placeholder="Party Name"
               error={errors.party_name}
-              onChange={handleChange}
+              onChange={handleInputChange}
             />
-            
-          <Button
-            type="submit"
-            text="Add Balance Party"
-            variant="primary"
-            loading={loading}
-            disabled={loading}
-            className={styles.submitBtn}
-          />
+
+            <Button
+              type="submit"
+              text="Add Balance Party"
+              variant="primary"
+              loading={loading}
+              disabled={loading}
+              className={styles.submitBtn}
+            />
           </FormSection>
         </div>
       </form>

@@ -16,4 +16,14 @@ const getAllBalanceParties = async (req, res) => {
     return successResponse(res, "", balanceParties);
 };
 
-export { newBalanceParty, getAllBalanceParties };
+const updateBalanceParty = async (req, res, next) => {
+    const id = req.params.id;
+    const { party_name } = req.body;
+    const party = await BalanceParty.findByIdAndUpdate(id, { party_name }, { new: true });
+    if (!party) {
+        return next(new AppError("Balance Party not found", 404));
+    }
+    return successResponse(res, "Balance Party Updated Successfully", party);
+}
+
+export { newBalanceParty, getAllBalanceParties, updateBalanceParty };

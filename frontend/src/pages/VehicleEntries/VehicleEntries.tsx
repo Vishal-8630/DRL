@@ -10,10 +10,7 @@ import { fadeInUp, staggerContainer } from "../../animations/animations";
 import VehicleEntryDropdown from "../../components/VehicleEntryDropdown";
 import { addMessage } from "../../features/message";
 import styles from "./VehicleEntries.module.scss";
-import GenericFilter from "../../components/GenericFilter";
 import { VehicleEntryFilters } from "../../filters/vehicleEntryFilters";
-import { applyGenericFilters } from "../../filters/filerHelper";
-import Overlay from "../../components/Overlay";
 import PaginatedList from "../../components/PaginatedList";
 import FilterContainer from "../../components/FilterContainer";
 
@@ -35,7 +32,6 @@ const VehicleEntries = () => {
   const [filteredEntries, setFilteredEntries] = useState<VehicleEntryType[]>(
     []
   );
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
     const fetchVehicleEntries = async () => {
