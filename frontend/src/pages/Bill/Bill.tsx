@@ -3,24 +3,26 @@ import styles from "./Bill.module.scss";
 import { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useReactToPrint } from "react-to-print";
-import { entryFailure, entryStart, entrySuccess } from "../../features/entry";
 import { addMessage } from "../../features/message";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import type { EntryType } from "../../types/entry";
-import api from "../../api/axios";
+import type { BillEntryType } from "../../types/billEntry";
 import BillInvoice from "../../components/BillInvoice";
 import { useSelector } from "react-redux";
-import { selectEntryLoading } from "../../features/entry/entrySelectors";
 import Loading from "../../components/Loading";
 import { motion } from "framer-motion";
+import {
+  searchBillEntriesByParamAsync,
+  selectBillEntryLoading,
+} from "../../features/billEntry";
+import type { AppDispatch } from "../../app/store";
 
 const Bill = () => {
   const [search, setSearch] = useState("");
-  const [entry, setEntry] = useState<Partial<EntryType> | {}>({});
+  const [entry, setEntry] = useState<Partial<BillEntryType> | {}>({});
   const billRef = useRef<HTMLDivElement>(null);
-  const dispatch = useDispatch();
-  const loading = useSelector(selectEntryLoading);
+  const dispatch: AppDispatch = useDispatch();
+  const loading = useSelector(selectBillEntryLoading);
 
   const handleSearchClear = () => {
     setSearch("");
@@ -48,20 +50,22 @@ const Bill = () => {
       );
     }
 
-    dispatch(entryStart());
     try {
-      const response = await api.get(`/billing-entry/?bill_no=${search}`);
-      const obj = response.data;
-      setEntry(obj.data[0]);
-      dispatch(entrySuccess());
-    } catch (error: any) {
-      dispatch(
-        addMessage({
-          type: "error",
-          text: error.response?.data?.message || "Something went wrong",
-        })
+      const resultAction = await dispatch(
+        searchBillEntriesByParamAsync({ bill_no: search })
       );
-      dispatch(entryFailure());
+      if (searchBillEntriesByParamAsync.fulfilled.match(resultAction)) {
+        const entries = resultAction.payload as BillEntryType[];
+        if (entries.length > 0) {
+          setEntry(entries[0]);
+        } else {
+          dispatch(addMessage({ type: "info", text: "No entry found" }));
+        }
+      } else if (searchBillEntriesByParamAsync.rejected.match(resultAction)) {
+        dispatch(addMessage({ type: "error", text: "Failed to fetch entry" }));
+      }
+    } catch {
+      dispatch(addMessage({ type: "error", text: "Something went wrong" }));
     }
   };
 

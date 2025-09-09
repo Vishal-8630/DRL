@@ -3,9 +3,9 @@ import {
   ENTRY_LABELS,
   type EntryType,
   type ExtraCharge,
-} from "../../types/entry";
+} from "../../types/billEntry";
 import styles from "./EntryRow.module.scss";
-import { PARTY_LABELS, type BillingPartyType } from "../../types/party";
+import { PARTY_LABELS, type BillingPartyType } from "../../types/billingParty";
 import { formatDate } from "../../utils/formatDate";
 
 interface EntryRowProps {

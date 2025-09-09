@@ -2,31 +2,31 @@ import { body, validationResult } from 'express-validator';
 
 export const vehicleEntryValidation = [
     body('date')
-        .notEmpty().withMessage('Date is required'),
+        .trim().notEmpty().withMessage('Date is required'),
     body('vehicle_no')
-    .notEmpty().withMessage("Vehicle Number is required"),
+        .trim().notEmpty().withMessage("Vehicle Number is required"),
     body('from')
-    .notEmpty().withMessage('From is required'),
+        .trim().notEmpty().withMessage('From is required'),
     body('to')
-    .notEmpty().withMessage('To is required'),
+        .trim().notEmpty().withMessage('To is required'),
     body('freight')
-    .notEmpty().withMessage('Freight is required'),
+        .trim().notEmpty().withMessage('Freight is required'),
     body('driver_cash')
-    .notEmpty().withMessage('Driver Cash is required'),
+        .trim().notEmpty().withMessage('Driver Cash is required'),
     body('dala')
-    .notEmpty().withMessage('Dala is required'),
+        .trim().notEmpty().withMessage('Dala is required'),
     body('kamisan')
-    .notEmpty().withMessage('Kamisan is required'),
+        .trim().notEmpty().withMessage('Kamisan is required'),
     body('in_ac')
-    .notEmpty().withMessage('In AC is required'),
+        .trim().notEmpty().withMessage('In AC is required'),
     body('halting')
-    .notEmpty().withMessage('Halting is required'),
+        .trim().notEmpty().withMessage('Halting is required'),
     body('balance')
-    .notEmpty().withMessage('Balance is required'),
+        .trim().notEmpty().withMessage('Balance is required'),
     body('owner')
-    .notEmpty().withMessage('Owner is required'),
+        .trim().notEmpty().withMessage('Owner is required'),
     body('status')
-    .notEmpty().withMessage('Status is required'),
+        .trim().notEmpty().withMessage('Status is required'),
 
     (req, res, next) => {
         const errors = validationResult(req);

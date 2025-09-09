@@ -1,4 +1,4 @@
-import type { VehicleEntryType } from "../types/vehicle";
+import type { VehicleEntryType } from "../types/vehicleEntry";
 import type { FilterConfig } from "./filter";
 
 export const VehicleEntryFilters: FilterConfig<VehicleEntryType>[] = [

@@ -2,35 +2,29 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   VEHICLE_ENTRY_LABELS,
   type VehicleEntryType,
-} from "../../types/vehicle";
+} from "../../types/vehicleEntry";
 import { useDispatch } from "react-redux";
-import { selectVehicleLoading } from "../../features/vehicle/vehicleSelectors";
 import { useSelector } from "react-redux";
-import api from "../../api/axios";
-import {
-  vehicleFailure,
-  vehicleStart,
-  vehicleSuccess,
-} from "../../features/vehicle";
 import { addMessage } from "../../features/message";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import styles from "./VehicleEntryDropdown.module.scss";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { formatDate } from "../../utils/formatDate";
+import { selectVehicleEntryLoading, updateVehicleEntryAsync } from "../../features/vehicleEntry";
+import type { AppDispatch } from "../../app/store";
 
 interface VehicleEntryDropdownProps {
   vehicleEntry: VehicleEntryType;
-  vehicleState: {
-    localVehicleEntry: VehicleEntryType;
+  itemState: {
+    localItem: VehicleEntryType;
     drafts: Partial<VehicleEntryType>;
     editing: Set<keyof VehicleEntryType>;
     isOpen: boolean;
   };
-  updateVehicleState: (id: string, newState: Partial<any>) => void;
+  updateItem: (id: string, newState: Partial<any>) => void;
   updateDraft: (id: string, key: keyof VehicleEntryType, value: string) => void;
   toggleEditing: (id: string, key: keyof VehicleEntryType) => void;
   toggleOpen: (id: string) => void;
-  updateOriginalVehicleEntry: (updatedVehicleEntry: VehicleEntryType) => void;
 }
 
 const dropDownVariants: Variants = {
@@ -44,15 +38,14 @@ const dropDownVariants: Variants = {
 
 const VehicleEntryDropdown: React.FC<VehicleEntryDropdownProps> = ({
   vehicleEntry,
-  vehicleState,
-  updateVehicleState,
+  itemState,
+  updateItem,
   updateDraft,
   toggleEditing,
   toggleOpen,
-  updateOriginalVehicleEntry,
 }) => {
-  const dispatch = useDispatch();
-  const loading = useSelector(selectVehicleLoading);
+  const dispatch: AppDispatch = useDispatch();
+  const loading = useSelector(selectVehicleEntryLoading);
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
 
@@ -70,64 +63,57 @@ const VehicleEntryDropdown: React.FC<VehicleEntryDropdownProps> = ({
     updateDraft(
       vehicleEntry._id,
       key,
-      (vehicleState.localVehicleEntry[key] as string) ?? ""
+      (itemState.localItem[key] as string) ?? ""
     );
   };
 
   const handleCancel = (key: keyof VehicleEntryType) => {
     toggleEditing(vehicleEntry._id, key);
-    updateVehicleState(vehicleEntry._id, {
-      drafts: { ...vehicleState.drafts, [key]: undefined },
+    updateItem(vehicleEntry._id, {
+      drafts: { ...itemState.drafts, [key]: undefined },
     });
   };
 
   const handleSave = (key: keyof VehicleEntryType) => {
-    const updatedValue = vehicleState.drafts[key] ?? "";
-    updateVehicleState(vehicleEntry._id, {
-      localVehicleEntry: {
-        ...vehicleState.localVehicleEntry,
+    const updatedValue = itemState.drafts[key] ?? "";
+    updateItem(vehicleEntry._id, {
+      localItem: {
+        ...itemState.localItem,
         [key]: updatedValue,
       },
     });
     toggleEditing(vehicleEntry._id, key);
-    updateVehicleState(vehicleEntry._id, {
-      drafts: { ...vehicleState.drafts, [key]: undefined },
+    updateItem(vehicleEntry._id, {
+      drafts: { ...itemState.drafts, [key]: undefined },
     });
   };
 
   const handleAbortChanges = () => {
-    updateVehicleState(vehicleEntry._id, {
-      localVehicleEntry: { ...vehicleEntry },
+    updateItem(vehicleEntry._id, {
+      localItem: { ...vehicleEntry },
       drafts: {},
       editing: new Set(),
     });
   };
 
   const handleSaveChanges = async () => {
-    dispatch(vehicleStart());
     try {
-      const { data } = await api.post(
-        `/vehicle-entry/update-vehicle-entry/${vehicleEntry._id}`,
-        vehicleState.localVehicleEntry
-      );
-      updateOriginalVehicleEntry(data.data);
-      dispatch(vehicleSuccess());
-      dispatch(addMessage({ type: "success", text: "Vehicle Entry Updated" }));
-    } catch (error: any) {
-      const errors = error.response?.data?.errors;
-      if (errors) {
-        Object.values(errors)
-          .flat()
-          .forEach((msg) => {
-            dispatch(addMessage({ type: "error", text: String(msg) }));
-          });
+      const resultAction = await dispatch(updateVehicleEntryAsync(itemState.localItem));
+      if (updateVehicleEntryAsync.fulfilled.match(resultAction)) {
+        dispatch(addMessage({ type: "success", text: "Vehicle entry updated successfully" }));
+      } else if (updateVehicleEntryAsync.rejected.match(resultAction)) {
+        const errors = resultAction.payload;
+        if (errors) {
+          dispatch(addMessage({ type: "error", text: Object.entries(errors)[0][1] }));
+        }
       }
-      dispatch(vehicleFailure());
+    } catch {
+      dispatch(addMessage({ type: "error", text: "Something went wrong" }));
     }
   };
 
   const hasChanges =
-    JSON.stringify(vehicleState.localVehicleEntry) !==
+    JSON.stringify(itemState.localItem) !==
     JSON.stringify(vehicleEntry);
 
   return (
@@ -140,33 +126,33 @@ const VehicleEntryDropdown: React.FC<VehicleEntryDropdownProps> = ({
           <div>
             <span className={styles.headingLabel}>Date: </span>
             <span className={styles.headingValue}>
-              {formatDate(new Date(vehicleState.localVehicleEntry.date)) || "—"}
+              {formatDate(new Date(itemState.localItem.date)) || "—"}
             </span>
             <span>|</span>
           </div>
           <div>
             <span className={styles.headingLabel}>Vehicle Number:</span>
             <span className={styles.headingValue}>
-              {vehicleState.localVehicleEntry.vehicle_no || "—"}
+              {itemState.localItem.vehicle_no || "—"}
             </span>
             <span>|</span>
           </div>
           <div>
             <span className={styles.headingLabel}>From:</span>
             <span className={styles.headingValue}>
-              {vehicleState.localVehicleEntry.from || "—"}
+              {itemState.localItem.from || "—"}
             </span>
             <span>|</span>
           </div>
           <div>
             <span className={styles.headingLabel}>To: </span>
             <span className={styles.headingValue}>
-              {vehicleState.localVehicleEntry.to || "—"}
+              {itemState.localItem.to || "—"}
             </span>
           </div>
         </div>
         <span className={styles.icon}>
-          {vehicleState.isOpen ? <FaChevronUp /> : <FaChevronDown />}
+          {itemState.isOpen ? <FaChevronUp /> : <FaChevronDown />}
         </span>
       </button>
 
@@ -182,7 +168,7 @@ const VehicleEntryDropdown: React.FC<VehicleEntryDropdownProps> = ({
       )}
 
       <AnimatePresence>
-        {vehicleState.isOpen && (
+        {itemState.isOpen && (
           <motion.div
             ref={contentRef}
             className={styles.content}
@@ -200,17 +186,17 @@ const VehicleEntryDropdown: React.FC<VehicleEntryDropdownProps> = ({
                   string
                 ][]
               ).map(([key, label]) => {
-                const isEditing = vehicleState.editing.has(key);
+                const isEditing = itemState.editing.has(key);
                 const isBalanceParty = (key as string) === "balance_party";
                 const value = isEditing
-                  ? vehicleState.drafts[key] ?? ""
+                  ? itemState.drafts[key] ?? ""
                   : isBalanceParty
-                  ? vehicleState.localVehicleEntry["balance_party"].party_name
+                  ? itemState.localItem["balance_party"].party_name
                   : isKeyDate(key)
                   ? formatDate(
-                      new Date(vehicleState.localVehicleEntry[key] as string)
+                      new Date(itemState.localItem[key] as string)
                     )
-                  : vehicleState.localVehicleEntry[key] ?? "—";
+                  : itemState.localItem[key] ?? "—";
 
                 return (
                   <div key={key} className={styles.row}>

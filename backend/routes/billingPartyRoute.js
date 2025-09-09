@@ -9,10 +9,10 @@ import { billingPartyValidations } from "../validators/billingPartyValidator.js"
 
 const router = express.Router();
 
-router.post("/new-billing-party", billingPartyValidations, newBillingParty);
-router.get("/all-billing-parties", getAllBillingParties);
-router.post(
-  "/update-billing-party/:id",
+router.post("/new", billingPartyValidations, newBillingParty);
+router.get("/all", getAllBillingParties);
+router.put(
+  "/update/:id",
   billingPartyValidations,
   updateBillingParty
 );

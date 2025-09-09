@@ -3,20 +3,20 @@ import styles from "./LRCopy.module.scss";
 import { useRef, useState } from "react";
 import Invoice from "../../components/Invoice";
 import { useDispatch } from "react-redux";
-import { entryFailure, entryStart, entrySuccess } from "../../features/entry";
-import api from "../../api/axios";
-import type { EntryType } from "../../types/entry";
+import type { BillEntryType } from "../../types/billEntry";
 import { addMessage } from "../../features/message";
 import { useReactToPrint } from "react-to-print";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { motion } from "framer-motion";
+import { searchBillEntriesByParamAsync } from "../../features/billEntry";
+import type { AppDispatch } from "../../app/store";
 
 const LRCopy = () => {
   const [search, setSearch] = useState("");
-  const [entry, setEntry] = useState<EntryType | null>(null);
+  const [entry, setEntry] = useState<BillEntryType | null>(null);
   const invoiceRef = useRef<HTMLDivElement>(null);
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
 
   const handleSearchClear = () => {
     setSearch("");
@@ -43,20 +43,22 @@ const LRCopy = () => {
         addMessage({ type: "error", text: "Please enter something to search" })
       );
     }
-    dispatch(entryStart());
     try {
-      const response = await api.get(`/billing-entry/?lr_no=${search}`);
-      const obj = response.data;
-      setEntry(obj.data[0]);
-      dispatch(entrySuccess());
-    } catch (error: any) {
-      dispatch(
-        addMessage({
-          type: "error",
-          text: error.response?.data?.message || "Something went wrong",
-        })
+      const resultAction = await dispatch(
+        searchBillEntriesByParamAsync({ lr_no: search })
       );
-      dispatch(entryFailure());
+      if (searchBillEntriesByParamAsync.fulfilled.match(resultAction)) {
+        const entries = resultAction.payload as BillEntryType[];
+        if (entries.length > 0) {
+          setEntry(entries[0]);
+        } else {
+          dispatch(addMessage({ type: "info", text: "No entry found" }));
+        }
+      } else if (searchBillEntriesByParamAsync.rejected.match(resultAction)) {
+        dispatch(addMessage({ type: "error", text: "Failed to fetch entry" }));
+      }
+    } catch {
+      dispatch(addMessage({ type: "error", text: "Something went wrong" }));
     }
   };
 

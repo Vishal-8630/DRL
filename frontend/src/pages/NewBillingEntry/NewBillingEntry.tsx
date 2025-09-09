@@ -3,176 +3,52 @@ import { v4 as uuidv4 } from "uuid";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import api from "../../api/axios";
-import { entryStart, entrySuccess, entryFailure } from "../../features/entry";
-import { partyFailure, partyStart, partySuccess } from "../../features/party";
 import { addMessage } from "../../features/message";
 
-import type { RootState } from "../../app/store";
 import {
+  EmptyBillEntry,
   EXTRA_CHARGE_LABELS,
-  type EntryType,
+  type BillEntryType,
   type ExtraCharge,
-} from "../../types/entry";
-import type { BillingPartyType } from "../../types/party";
+} from "../../types/billEntry";
+import type { BillingPartyType } from "../../types/billingParty";
 
 import styles from "./NewBillingEntry.module.scss";
 import FormInput from "../../components/FormInput";
 import FormSection from "../../components/FormSection";
-
-/** -------------------- Form Sections Constants -------------------- **/
-interface InputType {
-  type: string;
-  label: string;
-  name: string;
-  options?: string[];
-}
-
-type Option = { label: string; value: string };
-
-const BILL_INFO_INPUTS: InputType[] = [
-  { type: "number", label: "Bill No.", name: "bill_no" },
-  { type: "date", label: "Bill Date", name: "bill_date" },
-  { type: "select", label: "Billing Party", name: "billing_party" },
-];
-
-const LR_INFO_INPUTS: InputType[] = [
-  { type: "number", label: "LR No.", name: "lr_no" },
-  { type: "date", label: "LR Date", name: "lr_date" },
-];
-
-const CONSIGNOR_INPUTS: InputType[] = [
-  { type: "input", label: "Consignor Name", name: "consignor_name" },
-  {
-    type: "textarea",
-    label: "Consignor From Address",
-    name: "consignor_from_address",
-  },
-  { type: "textarea", label: "Consignor GST No.", name: "consignor_gst_no" },
-];
-
-const CONSIGNEE_INPUTS: InputType[] = [
-  { type: "input", label: "Consignee Name", name: "consignee" },
-  {
-    type: "textarea",
-    label: "Consignee Address",
-    name: "consignor_to_address",
-  },
-  { type: "input", label: "Consignee GST No.", name: "consignee_gst_no" },
-];
-
-const VEHICLE_PACKAGE_INPUTS: InputType[] = [
-  { type: "input", label: "Package", name: "pkg" },
-  { type: "input", label: "Vehicle No.", name: "vehicle_no" },
-  { type: "textarea", label: "From", name: "from" },
-  { type: "textarea", label: "To", name: "to" },
-  { type: "input", label: "BE No.", name: "be_no" },
-  { type: "date", label: "BE Date", name: "be_date" },
-  { type: "number", label: "Weight (KG)", name: "weight" },
-  { type: "input", label: "CBM", name: "cbm" },
-  { type: "input", label: "Fixed", name: "fixed" },
-  { type: "input", label: "Rate Per", name: "rate_per" },
-  { type: "input", label: "Mode of Packing", name: "mode_of_packing" },
-];
-
-const INVOICE_INPUTS: InputType[] = [
-  { type: "input", label: "Invoice No.", name: "invoice_no" },
-  { type: "input", label: "Eway Bill No.", name: "eway_bill_no" },
-  {
-    type: "input",
-    label: "Description of Goods",
-    name: "description_of_goods",
-  },
-  { type: "input", label: "Container No.", name: "container_no" },
-  { type: "input", label: "Value", name: "value" },
-];
-
-const CLERK_YARD_INPUTS: InputType[] = [
-  { type: "input", label: "Name of Clerk", name: "name_of_clerk" },
-  { type: "input", label: "Empty Yard Name", name: "empty_yard_name" },
-  { type: "textarea", label: "Remark If Any", name: "remark_if_any" },
-];
-
-const BILLING_HIRE_INPUTS: InputType[] = [
-  { type: "input", label: "To Be Billed At", name: "to_be_billed_at" },
-  { type: "number", label: "Hire Amount", name: "hire_amount" },
-  { type: "input", label: "Risk", name: "risk" },
-  {
-    type: "textarea",
-    label: "Address of Billing Office",
-    name: "address_of_billing_office",
-  },
-  { type: "number", label: "Rate", name: "rate" },
-  { type: "number", label: "Advance", name: "advance" },
-];
-
-const TAX_TOTAL_INPUTS: InputType[] = [
-  { type: "select", label: "State", name: "state" },
-  { type: "number", label: "Sub Total", name: "sub_total" },
-  { type: "number", label: "CGST", name: "cgst" },
-  { type: "number", label: "SGST", name: "sgst" },
-  { type: "number", label: "IGST", name: "igst" },
-  { type: "number", label: "Grand Total", name: "grand_total" },
-];
+import {
+  addBillEntryAsync,
+  selectBillEntryLoading,
+} from "../../features/billEntry";
+import {
+  BILL_INFO_INPUTS,
+  BILLING_HIRE_INPUTS,
+  CLERK_YARD_INPUTS,
+  CONSIGNEE_INPUTS,
+  CONSIGNOR_INPUTS,
+  INVOICE_INPUTS,
+  LR_INFO_INPUTS,
+  TAX_TOTAL_INPUTS,
+  VEHICLE_PACKAGE_INPUTS,
+  type InputType,
+  type Option,
+} from "./constants";
+import type { AppDispatch } from "../../app/store";
+import { billingPartySelectors, fetchBillingPartiesAsync } from "../../features/billingParty";
 
 /** -------------------- Component -------------------- **/
 const Entry: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { loading } = useSelector((state: RootState) => state.entry);
+  const dispatch: AppDispatch = useDispatch();
+  const loading = useSelector(selectBillEntryLoading);
 
-  const [entry, setEntry] = useState<EntryType>({
-    _id: "",
-    bill_no: "",
-    bill_date: "",
-    billing_party: { _id: "", name: "", address: "", gst_no: "" },
-    lr_no: "",
-    lr_date: "",
-    consignor_name: "",
-    consignor_from_address: "",
-    consignor_gst_no: "",
-    consignee: "",
-    consignor_to_address: "",
-    consignee_gst_no: "",
-    pkg: "",
-    vehicle_no: "",
-    from: "",
-    to: "",
-    be_no: "",
-    be_date: "",
-    weight: "",
-    cbm: "",
-    fixed: "",
-    rate_per: "",
-    mode_of_packing: "",
-    invoice_no: "",
-    eway_bill_no: "",
-    description_of_goods: "",
-    container_no: "",
-    value: "",
-    name_of_clerk: "",
-    empty_yard_name: "",
-    remark_if_any: "",
-    to_be_billed_at: "",
-    hire_amount: "",
-    risk: "",
-    address_of_billing_office: "",
-    rate: "",
-    advance: "",
-    extra_charges: [],
-    sub_total: "",
-    cgst: "",
-    sgst: "",
-    igst: "",
-    grand_total: "",
-    gst_up: "",
-    if_gst_other_state: "",
-  });
+  const [entry, setEntry] =
+    useState<Omit<BillEntryType, "_id">>(EmptyBillEntry);
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const errorsRef = useRef(errors);
+  const errorsRef = useRef<Record<string, string>>({});
+  const [, forceRender] = useState({});
 
-  const [parties, setParties] = useState<BillingPartyType[]>([]);
+  const billingParties = useSelector(billingPartySelectors.selectAll);
   const [selectedParty, setSelectedParty] = useState<BillingPartyType>({
     _id: "",
     name: "",
@@ -186,26 +62,14 @@ const Entry: React.FC = () => {
 
   const [state, setState] = useState("UP");
 
-  /** -------------------- Fetch Parties -------------------- **/
-  useEffect(() => {
-    const fetchAllParties = async () => {
-      dispatch(partyStart());
-      try {
-        const response = await api.get("/billing-party/all-billing-parties");
-        setParties(response.data.data);
-        dispatch(partySuccess());
-      } catch (error: any) {
-        console.error("Error fetching parties:", error);
-        dispatch(partyFailure());
-      }
-    };
-    fetchAllParties();
-  }, [dispatch]);
-
   /** -------------------- Sync Selected Party -------------------- **/
   useEffect(() => {
     setEntry((prev) => ({ ...prev, billing_party: selectedParty }));
   }, [selectedParty]);
+
+  useEffect(() => {
+    dispatch(fetchBillingPartiesAsync());
+  }, [dispatch]);
 
   /** -------------------- Calculate Fields -------------------- **/
   useEffect(() => {
@@ -242,32 +106,35 @@ const Entry: React.FC = () => {
 
     if (errorsRef.current[name]) {
       errorsRef.current[name] = "";
-      setErrors({ ...errorsRef.current });
+      forceRender({});
     }
 
     setEntry((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (val: string, name: string, mode: "select" | "search") => {
+  const handleSelectChange = (
+    val: string,
+    name: string,
+    mode: "select" | "search"
+  ) => {
     if (mode === "select") {
       setState(val);
     } else {
       if (val === "") {
         setSelectedParty({ _id: "", name: "", address: "", gst_no: "" });
-      setPartyError("Please select a Billing Party");
+        setPartyError("Please select a Billing Party");
       } else {
-        setSelectedParty(parties.find((p) => p.name === val) || selectedParty);
+        setSelectedParty(billingParties.find((p) => p.name === val) || selectedParty);
         setPartyError("");
       }
     }
   };
 
-  const fetchOptions = async (search: string): Promise<Option[]> => {
+  const fetchOptions = (search: string): Option[] => {
     try {
-      const response = await api.get(`/billing-party/by-name/${search}`);
-      const parties = response.data.data;
-      if (parties.length > 0) {
-        const options: Option[] = parties.map((party: BillingPartyType) => ({
+      const filteredBillingParties = billingParties.filter(party => party.name.toLowerCase().includes(search.toLowerCase()));
+      if (filteredBillingParties.length > 0) {
+        const options: Option[] = filteredBillingParties.map((party: BillingPartyType) => ({
           label: party.name,
           value: party.name,
         }));
@@ -328,37 +195,33 @@ const Entry: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(entryStart());
 
     if (partyValidation()) {
-      dispatch(entryFailure());
       return;
     }
 
     try {
-      const response = await api.post(
-        "/billing-entry/new-billing-entry",
-        entry
-      );
-      dispatch(addMessage({ type: "success", text: response.data.message }));
-      dispatch(entrySuccess());
-      navigate("/");
-    } catch (error: any) {
-      const errorsObj = error.response?.data?.errors || {};
-      Object.entries(errorsObj).forEach(([key, value]) => {
-        errorsRef.current[key] = value as string;
-      });
-      setErrors({ ...errorsRef.current });
-      dispatch(
-        addMessage({
-          type: "error",
-          text:
-            Object.keys(errorsObj).length > 0
-              ? "Please fill all the required fields"
-              : "New Entry Creation Failed",
-        })
-      );
-      dispatch(entryFailure());
+      const resultAction = await dispatch(addBillEntryAsync(entry));
+      if (addBillEntryAsync.fulfilled.match(resultAction)) {
+        dispatch(
+          addMessage({ type: "success", text: "Entry added successfully" })
+        );
+        navigate("/bill-entry/all-bill-entries");
+      } else if (addBillEntryAsync.rejected.match(resultAction)) {
+        const errors = resultAction.payload;
+        if (errors && !errors?.general && Object.keys(errors)?.length > 0) {
+          errorsRef.current = errors;
+          forceRender({});
+        }
+        dispatch(
+          addMessage({
+            type: "error",
+            text: errors?.general || "Please fill all the required fields",
+          })
+        );
+      }
+    } catch {
+      dispatch(addMessage({ type: "error", text: "Failed to add bill entry" }));
     }
   };
 
@@ -368,7 +231,7 @@ const Entry: React.FC = () => {
       let options: Option[] = [];
       let selectMode: "select" | "search" = "select";
       let error: string = errorsRef.current[input.name] || "";
-      let value: string = String(entry[input.name as keyof EntryType] || "");
+      let value: string = String((entry as any)[input.name] || "");
       let placeholder: string = input.label;
       let inputRef:
         | React.RefObject<
@@ -407,7 +270,9 @@ const Entry: React.FC = () => {
           selectMode={selectMode}
           inputRef={inputRef || undefined}
           onChange={handleChange}
-          onSelectChange={(val, name, mode) => handleSelectChange(val, name, mode)}
+          onSelectChange={(val, name, mode) =>
+            handleSelectChange(val, name, mode)
+          }
           fetchOptions={fetchOptions}
         />
       );

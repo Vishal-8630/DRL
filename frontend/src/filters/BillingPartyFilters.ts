@@ -1,4 +1,4 @@
-import type { BillingPartyType } from "../types/party";
+import type { BillingPartyType } from "../types/billingParty";
 import type { FilterConfig } from "./filter";
 
 export const BillingPartyFilters: FilterConfig<BillingPartyType>[] = [

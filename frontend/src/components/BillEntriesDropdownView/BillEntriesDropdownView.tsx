@@ -3,23 +3,24 @@ import styles from "./BillEntriesDropdownView.module.scss";
 import {
   ENTRY_LABELS,
   EXTRA_CHARGE_LABELS,
-  type EntryType,
+  type BillEntryType,
   type ExtraCharge,
-} from "../../types/entry";
+} from "../../types/billEntry";
 import { FaChevronDown } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { entryFailure, entryStart, entrySuccess } from "../../features/entry";
-import type { RootState } from "../../app/store";
+import type { AppDispatch } from "../../app/store";
 import { addMessage } from "../../features/message";
-import api from "../../api/axios";
-import { PARTY_LABELS, type BillingPartyType } from "../../types/party";
+import { PARTY_LABELS, type BillingPartyType } from "../../types/billingParty";
 import { formatDate } from "../../utils/formatDate";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
+import {
+  selectBillEntryLoading,
+  updateBillEntryAsync,
+} from "../../features/billEntry";
 
 // --- Props ---
 interface DropdownViewProps {
-  entry: EntryType;
-  onUpdate: (updatedEntry: EntryType) => void;
+  entry: BillEntryType;
 }
 
 const dropdownVariants: Variants = {
@@ -180,28 +181,28 @@ const ExtraChargeRow: React.FC<ExtraChargeRowProps> = ({
 );
 
 // --- Main DropdownView ---
-const BillEntriesDropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate }) => {
+const BillEntriesDropdownView: React.FC<DropdownViewProps> = ({ entry }) => {
   const [localEntry, setLocalEntry] = useState(entry);
   const [isOpen, setIsOpen] = useState(false);
   const [editing, setEditing] = useState<{
-    fields: Set<keyof EntryType>;
+    fields: Set<keyof BillEntryType>;
     extra_charges: Set<string>;
   }>({
     fields: new Set(),
     extra_charges: new Set(),
   });
   const [drafts, setDrafts] = useState<{
-    fields: Partial<EntryType>;
+    fields: Partial<BillEntryType>;
     extra_charges: Record<string, Partial<ExtraCharge>>;
   }>({
     fields: {},
     extra_charges: {},
   });
 
-  const dispatch = useDispatch();
-  const { loading } = useSelector((state: RootState) => state.entry);
+  const dispatch: AppDispatch = useDispatch();
+  const loading = useSelector(selectBillEntryLoading);
   const isKeyDate = useCallback(
-    (key: keyof EntryType) => key.toLowerCase().includes("date"),
+    (key: keyof BillEntryType) => key.toLowerCase().includes("date"),
     []
   );
   const [height, setHeight] = useState(0);
@@ -220,7 +221,7 @@ const BillEntriesDropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate 
   });
 
   // --- Field Handlers ---
-  const startEditField = (key: keyof EntryType) => {
+  const startEditField = (key: keyof BillEntryType) => {
     setEditing((prev) => ({ ...prev, fields: new Set(prev.fields).add(key) }));
     setDrafts((prev) => ({
       ...prev,
@@ -233,7 +234,7 @@ const BillEntriesDropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate 
       },
     }));
   };
-  const saveField = (key: keyof EntryType) => {
+  const saveField = (key: keyof BillEntryType) => {
     setLocalEntry((prev) => ({ ...prev, [key]: drafts.fields[key] }));
     setEditing((prev) => ({
       ...prev,
@@ -244,7 +245,7 @@ const BillEntriesDropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate 
       return { ...prev, fields: rest };
     });
   };
-  const cancelField = (key: keyof EntryType) => {
+  const cancelField = (key: keyof BillEntryType) => {
     setEditing((prev) => ({
       ...prev,
       fields: new Set([...prev.fields].filter((k) => k !== key)),
@@ -363,28 +364,27 @@ const BillEntriesDropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate 
   };
 
   const saveChanges = async () => {
-    dispatch(entryStart());
     try {
-      const response = await api.post(
-        `/billing-entry/update-billing-entry/${entry._id}`,
-        localEntry
-      );
-      const obj = response.data;
-      setLocalEntry(obj.data);
-      onUpdate(obj.data);
-      dispatch(entrySuccess());
-      dispatch(
-        addMessage({ type: "success", text: obj.message || "Entry Updated" })
-      );
-    } catch (error: any) {
-      const errors = error.response?.data?.errors;
-      if (errors)
-        Object.values(errors)
-          .flat()
-          .forEach((msg) =>
-            dispatch(addMessage({ type: "error", text: String(msg) }))
-          );
-      dispatch(entryFailure());
+      const resultAction = await dispatch(updateBillEntryAsync(localEntry));
+      if (updateBillEntryAsync.fulfilled.match(resultAction)) {
+        dispatch(
+          addMessage({ type: "success", text: "Entry updated successfully" })
+        );
+      } else if (updateBillEntryAsync.rejected.match(resultAction)) {
+        const errors = resultAction.payload;
+        if (errors && Object.keys(errors).length > 0) {
+          Object.keys(errors).forEach((key) => {
+            dispatch(
+              addMessage({
+                type: "error",
+                text: errors[key] || "Failed to update entry",
+              })
+            );
+          });
+        }
+      }
+    } catch {
+      dispatch(addMessage({ type: "error", text: "Failed to update entry" }));
     }
   };
 
@@ -432,7 +432,7 @@ const BillEntriesDropdownView: React.FC<DropdownViewProps> = ({ entry, onUpdate 
           >
             <motion.div className={styles.list}>
               {(
-                Object.entries(ENTRY_LABELS) as [keyof EntryType, string][]
+                Object.entries(ENTRY_LABELS) as [keyof BillEntryType, string][]
               ).map(([key, label]) => {
                 if (key === "extra_charges") {
                   return (

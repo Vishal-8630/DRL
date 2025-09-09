@@ -42,9 +42,13 @@ const NewBalanceParty: React.FC = () => {
       dispatch(addMessage({ type: "success", text: "Balance Party added successfully" }));
       navigate("/vehicle-entry/all-balance-parties");
     } else if (addBalancePartyAsync.rejected.match(resultAction)) {
+      const errors = resultAction.payload;
+      if (errors && Object.keys(errors).length > 0) {
+        setErrors(errors);
+      }
       dispatch(addMessage({
         type: "error",
-        text: resultAction.payload || "Failed to add balance party",
+        text: errors?.message || "Please fill all the required fields",
       }));
     }
   };

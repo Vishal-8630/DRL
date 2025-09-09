@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import styles from "./BillingParty.module.scss";
 import BillingPartyForm from "../../components/BillingPartyForm";
 import { useSelector, useDispatch } from "react-redux";
-import { selectPartyLoading } from "../../features/party/partySelectros";
 import Loading from "../../components/Loading";
-import type { BillingPartyType } from "../../types/party";
-import { partyFailure, partyStart, partySuccess } from "../../features/party";
-import api from "../../api/axios";
+import {
+  EmptyBillingParty,
+  type BillingPartyType,
+} from "../../types/billingParty";
 import { addMessage } from "../../features/message";
 import { fadeInUp, staggerContainer } from "../../animations/animations";
 import { motion } from "framer-motion";
@@ -15,6 +15,14 @@ import PaginatedList from "../../components/PaginatedList";
 import { BillingPartyFilters } from "../../filters/BillingPartyFilters";
 import FilterContainer from "../../components/FilterContainer";
 import BillingPartyDropdown from "../../components/BillingPartyDropdown";
+import {
+  addBillingPartyAsync,
+  billingPartySelectors,
+  fetchBillingPartiesAsync,
+  selectBillingPartyLoading,
+} from "../../features/billingParty";
+import type { AppDispatch } from "../../app/store";
+import { useItemStates } from "../../hooks/useItemStates";
 
 /* -------------------- Constants -------------------- */
 export const TABS = {
@@ -24,73 +32,38 @@ export const TABS = {
 
 type ActiveTab = (typeof TABS)[keyof typeof TABS];
 
-/* -------------------- Types -------------------- */
-type PartyState = {
-  localParty: BillingPartyType; // Local copy of party
-  drafts: Partial<BillingPartyType>; // Draft values while editing
-  editing: Set<keyof BillingPartyType>; // Currently editing fields
-  isOpen: boolean; // Expand/collapse flag
-};
-
 const BillingParty = () => {
   /* -------------------- Redux -------------------- */
-  const loading = useSelector(selectPartyLoading);
-  const dispatch = useDispatch();
+  const loading = useSelector(selectBillingPartyLoading);
+  const dispatch: AppDispatch = useDispatch();
 
   /* -------------------- Local State -------------------- */
   const [activeTab, setActiveTab] = useState<ActiveTab>(TABS.LIST);
 
   // "Add Party" form state
-  const [party, setParty] = useState<BillingPartyType>({
-    _id: "",
-    name: "",
-    address: "",
-    gst_no: "",
-  });
+  const [party, setParty] =
+    useState<Omit<BillingPartyType, "_id">>(EmptyBillingParty);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [parties, setParties] = useState<BillingPartyType[]>([]);
+  const billingParties = useSelector(billingPartySelectors.selectAll);
 
-  // State management for each Party component
-  const [partyStates, setPartyStates] = useState<Record<string, PartyState>>(
-    {}
-  );
   const [filteredParties, setFilteredParties] = useState<BillingPartyType[]>(
     []
   );
+
+    const { itemStates, updateItem, updateDraft, toggleEditing, toggleOpen } =
+    useItemStates(billingParties);
 
   /* -------------------- Effects -------------------- */
 
   // Fetch all parties whenever tab changes (mainly when switching back to LIST)
   useEffect(() => {
-    const fetchAllParties = async () => {
-      try {
-        const response = await api.get("/billing-party/all-billing-parties");
-        const data: BillingPartyType[] = response.data.data;
-        setParties(data);
-
-        // Initialize per-party state
-        const initialStates: Record<string, PartyState> = {};
-        data.forEach((p) => {
-          initialStates[p._id] = {
-            localParty: { ...p },
-            drafts: {},
-            editing: new Set(),
-            isOpen: false,
-          };
-        });
-        setPartyStates(initialStates);
-      } catch (error: any) {
-        console.error("Failed to fetch parties", error.response);
-      }
-    };
-
-    fetchAllParties();
-  }, [activeTab]);
+    dispatch(fetchBillingPartiesAsync());
+  }, [activeTab, dispatch]);
 
   useEffect(() => {
-    setFilteredParties(parties);
-  }, [parties]);
+    setFilteredParties(billingParties);
+  }, [billingParties]);
 
   /* -------------------- Handlers: Add Party -------------------- */
 
@@ -113,79 +86,28 @@ const BillingParty = () => {
   // Submit new party
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    dispatch(partyStart());
-
     try {
-      const response = await api.post(
-        "/billing-party/new-billing-party",
-        party
-      );
-
-      // Success message
-      dispatch(addMessage({ type: "success", text: response.data.message }));
-
-      // Reset form and return to list
-      setParty({ _id: "", name: "", address: "", gst_no: "" });
-      setActiveTab(TABS.LIST);
-
-      dispatch(partySuccess());
-    } catch (error: any) {
-      const errorObj = error.response?.data?.errors;
-      if (errorObj) setErrors(errorObj);
-      dispatch(partyFailure());
+      const resultAction = await dispatch(addBillingPartyAsync(party));
+      if (addBillingPartyAsync.fulfilled.match(resultAction)) {
+        dispatch(
+          addMessage({
+            type: "success",
+            text: "Billing party added successfully",
+          })
+        );
+        setActiveTab(TABS.LIST);
+      } else if (addBillingPartyAsync.rejected.match(resultAction)) {
+        const errors = resultAction.payload;
+        if (errors) {
+          setErrors(errors);
+        }
+        dispatch(
+          addMessage({ type: "error", text: errors?.message || "Please fill all the require fields" })
+        );
+      }
+    } catch {
+      dispatch(addMessage({ type: "error", text: "Something went wrong" }));
     }
-  };
-
-  /* -------------------- Handlers: Party State Management -------------------- */
-
-  // Update full party state
-  const updatePartyState = (partyId: string, newState: Partial<PartyState>) => {
-    setPartyStates((prev) => ({
-      ...prev,
-      [partyId]: { ...prev[partyId], ...newState },
-    }));
-  };
-
-  // Update a single draft field
-  const updateDraft = (
-    partyId: string,
-    key: keyof BillingPartyType,
-    value: string
-  ) => {
-    setPartyStates((prev) => ({
-      ...prev,
-      [partyId]: {
-        ...prev[partyId],
-        drafts: { ...prev[partyId].drafts, [key]: value },
-      },
-    }));
-  };
-
-  // Toggle editing mode for a specific field
-  const toggleEditing = (partyId: string, key: keyof BillingPartyType) => {
-    setPartyStates((prev) => {
-      const editing = new Set(prev[partyId].editing);
-      if (editing.has(key)) editing.delete(key);
-      else editing.add(key);
-      return { ...prev, [partyId]: { ...prev[partyId], editing } };
-    });
-  };
-
-  // Expand / collapse a party block
-  const toggleOpen = (partyId: string) => {
-    setPartyStates((prev) => ({
-      ...prev,
-      [partyId]: { ...prev[partyId], isOpen: !prev[partyId].isOpen },
-    }));
-  };
-
-  // Update parties array after successful update
-  const updateOriginalParty = (updatedParty: BillingPartyType) => {
-    setParties((prev) =>
-      prev.map((party) =>
-        party._id === updatedParty._id ? updatedParty : party
-      )
-    );
   };
 
   /* -------------------- Render -------------------- */
@@ -210,7 +132,7 @@ const BillingParty = () => {
         </div>
         {activeTab === TABS.LIST && (
           <FilterContainer
-            data={parties}
+            data={billingParties}
             filters={BillingPartyFilters}
             onFiltered={setFilteredParties}
           />
@@ -247,13 +169,12 @@ const BillingParty = () => {
                     <motion.div key={p._id} variants={fadeInUp}>
                       <BillingPartyDropdown
                         key={p._id}
-                        party={p}
-                        partyState={partyStates[p._id]}
-                        updatePartyState={updatePartyState}
+                        billingParty={p}
+                        itemState={itemStates[p._id]}
+                        updateItem={updateItem}
                         updateDraft={updateDraft}
                         toggleEditing={toggleEditing}
                         toggleOpen={toggleOpen}
-                        updateOriginalParty={updateOriginalParty}
                       />
                     </motion.div>
                   </motion.div>

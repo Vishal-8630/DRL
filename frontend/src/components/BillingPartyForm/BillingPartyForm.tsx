@@ -1,5 +1,5 @@
 import styles from "./BillingPartyForm.module.scss";
-import type { BillingPartyType } from "../../types/party";
+import type { BillingPartyType } from "../../types/billingParty";
 import FormSection from "../FormSection";
 import FormInput from "../FormInput";
 
@@ -10,7 +10,7 @@ interface BillingPartyFormProps {
     >
   ) => void;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  party: BillingPartyType;
+  party: Omit<BillingPartyType, "_id">;
   errors: Record<string, string>;
 }
 

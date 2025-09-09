@@ -1,120 +1,41 @@
 import { useEffect, useState } from "react";
-import { type VehicleEntryType } from "../../types/vehicle";
+import { type VehicleEntryType } from "../../types/vehicleEntry";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { selectVehicleLoading } from "../../features/vehicle/vehicleSelectors";
-import api from "../../api/axios";
 import Loading from "../../components/Loading";
 import { motion } from "framer-motion";
 import { fadeInUp, staggerContainer } from "../../animations/animations";
 import VehicleEntryDropdown from "../../components/VehicleEntryDropdown";
-import { addMessage } from "../../features/message";
 import styles from "./VehicleEntries.module.scss";
 import { VehicleEntryFilters } from "../../filters/vehicleEntryFilters";
 import PaginatedList from "../../components/PaginatedList";
 import FilterContainer from "../../components/FilterContainer";
-
-type VehicleState = {
-  localVehicleEntry: VehicleEntryType;
-  drafts: Partial<VehicleEntryType>;
-  editing: Set<keyof VehicleEntryType>;
-  isOpen: boolean;
-};
+import {
+  fetchVehicleEntriesAsync,
+  selectVehicleEntryLoading,
+  vehicleEntrySelectors,
+} from "../../features/vehicleEntry";
+import type { AppDispatch } from "../../app/store";
+import { useItemStates } from "../../hooks/useItemStates";
 
 const VehicleEntries = () => {
-  const dispatch = useDispatch();
-  const loading = useSelector(selectVehicleLoading);
+  const dispatch: AppDispatch = useDispatch();
+  const loading = useSelector(selectVehicleEntryLoading);
 
-  const [vehicleEntries, setVehicleEntries] = useState<VehicleEntryType[]>([]);
-  const [vehicleStates, setVehicleStates] = useState<
-    Record<string, VehicleState>
-  >({});
+  const vehicleEntries = useSelector(vehicleEntrySelectors.selectAll);
   const [filteredEntries, setFilteredEntries] = useState<VehicleEntryType[]>(
     []
   );
+  const { itemStates, updateItem, updateDraft, toggleEditing, toggleOpen } =
+    useItemStates(vehicleEntries);
 
   useEffect(() => {
-    const fetchVehicleEntries = async () => {
-      try {
-        const response = await api.get("/vehicle-entry/all-vehicle-entries");
-        const data: VehicleEntryType[] = response.data.data;
-        setVehicleEntries(data);
-
-        // Initalize per-vehicle state
-        const initialStates: Record<string, VehicleState> = {};
-        data.forEach((v) => {
-          initialStates[v._id] = {
-            localVehicleEntry: { ...v },
-            drafts: {},
-            editing: new Set(),
-            isOpen: false,
-          };
-        });
-        setVehicleStates(initialStates);
-      } catch (error: any) {
-        dispatch(
-          addMessage({
-            type: "error",
-            text:
-              error.response?.data?.mesage || "Failed to fetch vehicle entries",
-          })
-        );
-        console.error("Failed to fetch vehicle entries", error.response);
-      }
-    };
-    fetchVehicleEntries();
-  }, []);
+    dispatch(fetchVehicleEntriesAsync());
+  }, [dispatch]);
 
   useEffect(() => {
     setFilteredEntries(vehicleEntries);
   }, [vehicleEntries]);
-
-  const updateVehicleState = (id: string, newState: Partial<VehicleState>) => {
-    setVehicleStates((prevStates) => ({
-      ...prevStates,
-      [id]: { ...prevStates[id], ...newState },
-    }));
-  };
-
-  const updateDraft = (
-    id: string,
-    key: keyof VehicleEntryType,
-    value: string
-  ) => {
-    setVehicleStates((prev) => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        drafts: { ...prev[id].drafts, [key]: value },
-      },
-    }));
-  };
-
-  const toggleEditing = (id: string, key: keyof VehicleEntryType) => {
-    setVehicleStates((prev) => {
-      const editing = new Set(prev[id].editing);
-      if (editing.has(key)) editing.delete(key);
-      else editing.add(key);
-      return { ...prev, [id]: { ...prev[id], editing } };
-    });
-  };
-
-  const toggleOpen = (id: string) => {
-    setVehicleStates((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], isOpen: !prev[id].isOpen },
-    }));
-  };
-
-  const updateOriginalVehicleEntry = (
-    updatedVehicleEntry: VehicleEntryType
-  ) => {
-    setVehicleEntries((prev) =>
-      prev.map((v) =>
-        v._id === updatedVehicleEntry._id ? updatedVehicleEntry : v
-      )
-    );
-  };
 
   if (loading) return <Loading />;
 
@@ -144,12 +65,11 @@ const VehicleEntries = () => {
                 <motion.div key={v._id} variants={fadeInUp}>
                   <VehicleEntryDropdown
                     vehicleEntry={v}
-                    vehicleState={vehicleStates[v._id]}
-                    updateVehicleState={updateVehicleState}
+                    itemState={itemStates[v._id]}
+                    updateItem={updateItem}
                     updateDraft={updateDraft}
                     toggleEditing={toggleEditing}
                     toggleOpen={toggleOpen}
-                    updateOriginalVehicleEntry={updateOriginalVehicleEntry}
                   />
                 </motion.div>
               );

@@ -4,8 +4,8 @@ import { balancePartyValidations } from '../validators/balancePartyValidator.js'
 
 const router = express.Router();
 
-router.post('/new-balance-party', balancePartyValidations, newBalanceParty);
-router.get('/all-balance-parties', getAllBalanceParties);
-router.put('/:id', updateBalanceParty);
+router.post('/new', balancePartyValidations, newBalanceParty);
+router.get('/all', getAllBalanceParties);
+router.put('/update/:id', balancePartyValidations, updateBalanceParty);
 
 export default router;

@@ -1,4 +1,4 @@
-import type { BalancePartyType } from "../types/vehicle";
+import type { BalancePartyType } from "../types/vehicleEntry";
 import type { FilterConfig } from "./filter";
 
 export const BalancePartyFilters: FilterConfig<BalancePartyType>[] = [

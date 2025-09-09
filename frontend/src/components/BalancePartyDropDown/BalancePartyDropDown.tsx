@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { BalancePartyType } from "../../types/vehicle";
+import type { BalancePartyType } from "../../types/vehicleEntry";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { addMessage } from "../../features/message";
@@ -69,7 +69,7 @@ const BalancePartyDropDown: React.FC<BalancePartyDropDownProps> = ({
   const handleSaveChanges = async () => {
     try {
       const resultAction = await dispatch(
-        updateBalancePartyAsync(itemState.localItem) as any
+        updateBalancePartyAsync(itemState.localItem)
       );
       if (updateBalancePartyAsync.fulfilled.match(resultAction)) {
         dispatch(
@@ -79,12 +79,10 @@ const BalancePartyDropDown: React.FC<BalancePartyDropDownProps> = ({
           })
         );
       } else if (updateBalancePartyAsync.rejected.match(resultAction)) {
-        dispatch(
-          addMessage({
-            type: "error",
-            text: resultAction.payload || "Failed to update balance party",
-          })
-        );
+        const errors = resultAction.payload;
+        if (errors && Object.keys(errors).length > 0) {
+          dispatch(addMessage({ type: "error", text: Object.entries(errors)[0][1] }));
+        }
       }
     } catch {
       dispatch(
@@ -122,10 +120,7 @@ const BalancePartyDropDown: React.FC<BalancePartyDropDownProps> = ({
           >
             {loading ? "Saving..." : "Save Changes"}
           </button>
-          <button
-            className={styles.abortChanges}
-            onClick={handleAbortChanges}
-          >
+          <button className={styles.abortChanges} onClick={handleAbortChanges}>
             Abort Changes
           </button>
         </div>
@@ -144,10 +139,12 @@ const BalancePartyDropDown: React.FC<BalancePartyDropDownProps> = ({
             custom={height}
           >
             <div className={styles.list}>
-              {(Object.entries(BALANCE_PARTY_LABELS) as [
-                keyof BalancePartyType,
-                string
-              ][]).map(([key, label]) => {
+              {(
+                Object.entries(BALANCE_PARTY_LABELS) as [
+                  keyof BalancePartyType,
+                  string
+                ][]
+              ).map(([key, label]) => {
                 const isEditing = itemState.editing.has(key);
                 const value = isEditing
                   ? itemState.drafts[key] ?? ""

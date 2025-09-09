@@ -7,6 +7,7 @@ import {
 import type { BalancePartyType } from "../../types/balanceParty";
 import api from "../../api/axios";
 import type { RootState } from "../../app/store";
+import normalizedError from "../../utils/normalizedError";
 
 // -------------------- Adapter -------------------
 const balancePartyAdapter = createEntityAdapter<BalancePartyType, EntityId>({
@@ -22,7 +23,7 @@ export const fetchBalanceParties = createAsyncThunk<
   { rejectValue: string }
 >("balanceParty/fetchAll", async (_, { rejectWithValue }) => {
   try {
-    const response = await api.get("/balance-party/all-balance-parties");
+    const response = await api.get("/balance-party/all");
     return response.data.data as BalancePartyType[];
   } catch (err: any) {
     return rejectWithValue(err.message || "Failed to fetch balance parties");
@@ -33,16 +34,16 @@ export const fetchBalanceParties = createAsyncThunk<
 export const addBalancePartyAsync = createAsyncThunk<
   BalancePartyType,
   Omit<BalancePartyType, "_id">,
-  { rejectValue: string }
+  { rejectValue: Record<string, string> }
 >("balanceParty/add", async (newParty, { rejectWithValue }) => {
   try {
     const response = await api.post(
-      "/balance-party/new-balance-party",
+      "/balance-party/new",
       newParty
     );
     return response.data.data as BalancePartyType;
   } catch (err: any) {
-    return rejectWithValue(err.message || "Failed to add balance party");
+    return rejectWithValue(normalizedError(err, "Failed to add balance party"));
   }
 });
 
@@ -50,16 +51,16 @@ export const addBalancePartyAsync = createAsyncThunk<
 export const updateBalancePartyAsync = createAsyncThunk<
   BalancePartyType,
   BalancePartyType,
-  { rejectValue: string }
+  { rejectValue: Record<string, string> }
 >("balanceParty/update", async (updatedParty, { rejectWithValue }) => {
   try {
     const response = await api.put(
-      `/balance-party/${updatedParty._id}`,
+      `/balance-party/update/${updatedParty._id}`,
       updatedParty
     );
     return response.data.data as BalancePartyType;
   } catch (err: any) {
-    return rejectWithValue(err.message || "Failed to update balance party");
+    return rejectWithValue(normalizedError(err, "Failed to update balance party"));
   }
 });
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { BalancePartyType } from "../../types/vehicle";
+import type { BalancePartyType } from "../../types/vehicleEntry";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";

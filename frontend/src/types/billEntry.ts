@@ -1,4 +1,4 @@
-import type { BillingPartyType } from "./party";
+import type { BillingPartyType } from "./billingParty";
 
 export interface ExtraCharge {
   _id: string;
@@ -15,7 +15,7 @@ export const EXTRA_CHARGE_LABELS: Record<string, string> = {
   per_amount: "Per Amount",
 };
 
-export interface EntryType {
+export interface BillEntryType {
   _id: string;
   bill_no: string;
   bill_date: string;
@@ -108,4 +108,51 @@ export const ENTRY_LABELS: Record<string, string> = {
   grand_total: "Grand Total",
   gst_up: "GST UP",
   if_gst_other_state: "If GST Other State",
+};
+
+export const EmptyBillEntry: Omit<BillEntryType, "_id"> = {
+  bill_no: "",
+  bill_date: "",
+  billing_party: { _id: "", name: "", address: "", gst_no: "" },
+  lr_no: "",
+  lr_date: "",
+  consignor_name: "",
+  consignor_from_address: "",
+  consignor_gst_no: "",
+  consignee: "",
+  consignor_to_address: "",
+  consignee_gst_no: "",
+  pkg: "",
+  vehicle_no: "",
+  from: "",
+  to: "",
+  be_no: "",
+  be_date: "",
+  weight: "",
+  cbm: "",
+  fixed: "",
+  rate_per: "",
+  mode_of_packing: "",
+  invoice_no: "",
+  eway_bill_no: "",
+  description_of_goods: "",
+  container_no: "",
+  value: "",
+  name_of_clerk: "",
+  empty_yard_name: "",
+  remark_if_any: "",
+  to_be_billed_at: "",
+  hire_amount: "",
+  risk: "",
+  address_of_billing_office: "",
+  rate: "",
+  advance: "",
+  extra_charges: [],
+  sub_total: "",
+  cgst: "",
+  sgst: "",
+  igst: "",
+  grand_total: "",
+  gst_up: "",
+  if_gst_other_state: "",
 };

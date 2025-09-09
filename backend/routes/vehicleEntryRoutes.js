@@ -9,11 +9,11 @@ import { vehicleEntryValidation } from "../validators/vehicleEntryValidator.js";
 
 const router = express.Router();
 
-router.post("/new-vehicle-entry", vehicleEntryValidation, addNewVehicleEntry);
-router.get("/all-vehicle-entries", getAllVehicleEntries);
+router.post("/new", vehicleEntryValidation, addNewVehicleEntry);
+router.get("/all", getAllVehicleEntries);
 router.get("/by-party/:id", searchVehicleEntryByParty);
-router.post(
-  "/update-vehicle-entry/:id",
+router.put(
+  "/update/:id",
   vehicleEntryValidation,
   updateVehicleEntry
 );

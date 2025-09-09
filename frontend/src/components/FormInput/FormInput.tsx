@@ -24,7 +24,7 @@ interface FormInputProps {
     >
   ) => void;
   onSelectChange?: (val: string, name: string, mode: "select" | "search") => void;
-  fetchOptions?: (val: string) => Promise<Option[]>;
+  fetchOptions?: (val: string) => Option[];
 }
 
 const FormInput: React.FC<FormInputProps> = ({
@@ -68,7 +68,7 @@ const FormInput: React.FC<FormInputProps> = ({
           placeholder={placeholder}
           inputRef={inputRef}
           onChange={(val, name, mode) => onSelectChange?.(val, name, mode)}
-          fetchOptions={fetchOptions ?? (async () => [])}
+          fetchOptions={fetchOptions}
         />
       ) : (
         <motion.div

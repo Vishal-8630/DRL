@@ -1,8 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, } from "react";
 import styles from "./BillEntries.module.scss";
 import { FaTimes, FaSearch, FaChevronDown } from "react-icons/fa";
-import type { EntryType } from "../../types/entry";
-import api from "../../api/axios";
 import Loading from "../../components/Loading";
 import { useDispatch } from "react-redux";
 import { addMessage } from "../../features/message";
@@ -17,6 +15,9 @@ import {
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import PaginatedList from "../../components/PaginatedList";
+import { useSelector } from "react-redux";
+import { billEntrySelectors, fetchBillEntriesAsync, searchBillEntriesByParamAsync, selectBillEntryLoading } from "../../features/billEntry";
+import type { AppDispatch } from "../../app/store";
 
 const SEARCH_MAPPING: Record<string, string> = {
   "Bill Number": "bill_no",
@@ -91,37 +92,21 @@ const Dropdown = ({
 const BillEntries = () => {
   const [search, setSearch] = useState("");
   const [searchParam, setSearchParam] = useState(SEARCH_OPTIONS[0]);
-  const [entries, setEntries] = useState<EntryType[]>([]);
-  const [loading, setLoading] = useState(true);
+  let billEntries = useSelector(billEntrySelectors.selectAll);
+  const loading = useSelector(selectBillEntryLoading)
   const [openDropdown, setOpenDropdown] = useState<"search" | "view" | null>(
     null
   );
 
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
 
-  const fetchEntries = useCallback(async () => {
-    try {
-      const { data } = await api.get("/billing-entry/all-billing-entries");
-      setEntries(data.data);
-    } catch (error: any) {
-      dispatch(
-        addMessage({
-          type: "error",
-          text: error.response?.data?.message || "Error in loading entries",
-        })
-      );
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    dispatch(fetchBillEntriesAsync());
   }, [dispatch]);
 
   useEffect(() => {
-    fetchEntries();
-  }, [fetchEntries]);
-
-  useEffect(() => {
     if (!search) {
-      fetchEntries();
+      dispatch(fetchBillEntriesAsync());
       return;
     }
     const handler = setTimeout(() => handleSearch(), DEBOUNCE_DELAY);
@@ -130,7 +115,7 @@ const BillEntries = () => {
 
   const handleSearchClear = () => {
     setSearch("");
-    fetchEntries();
+    dispatch(fetchBillEntriesAsync());
   };
 
   const handleSearch = async () => {
@@ -140,7 +125,7 @@ const BillEntries = () => {
       );
     }
 
-    const param = SEARCH_MAPPING[searchParam];
+    const paramKey = SEARCH_MAPPING[searchParam];
     const query = encodeURIComponent(
       search
         .split(",")
@@ -150,37 +135,31 @@ const BillEntries = () => {
     );
 
     try {
-      const { data } = await api.get(`/billing-entry?${param}=${query}`);
-      if (data.data.length > 0) {
-        setEntries(data.data);
-      } else {
-        dispatch(addMessage({ type: "info", text: "No entry found" }));
-        fetchEntries();
+      const resultAction = await dispatch(searchBillEntriesByParamAsync({ [paramKey]: query }));
+      if (searchBillEntriesByParamAsync.fulfilled.match(resultAction)) {
+        const searchedEntries = resultAction.payload;
+        if (searchedEntries?.length > 0) {
+          billEntries = searchedEntries
+        } else {
+          dispatch(addMessage({ type: "info", text: "No entry found" }));
+        }
+      } else if(searchBillEntriesByParamAsync.rejected.match(resultAction)) {
+        dispatch(addMessage({ type: "error", text: "Failed to search entry" }));
       }
-    } catch (error: any) {
+    } catch {
       dispatch(
         addMessage({
           type: "error",
-          text:
-            error.response?.data?.message ||
-            "Failed to fetch. Please try again later.",
+          text: "Something went wrong."
         })
       );
     }
   };
 
-  const updateOriginalEntry = (updatedEntry: EntryType) => {
-    setEntries((prev) =>
-      prev.map((entry) =>
-        entry._id === updatedEntry._id ? updatedEntry : entry
-      )
-    );
-  };
-
   const handleExport = () => {
-    const headers = getOrderedHeaders(entries);
+    const headers = getOrderedHeaders(billEntries);
     const headerLabels = getHeaderLabels(headers);
-    const rows = buildRows(entries, headers);
+    const rows = buildRows(billEntries, headers);
 
     // Replace keys with labels for Excel
     const labeledRows = rows.map((row) => {
@@ -253,7 +232,7 @@ const BillEntries = () => {
       {/* 📄 Content Area */}
       <div className={styles.homeContent}>
         <PaginatedList
-          items={entries}
+          items={billEntries}
           itemsPerPage={10}
           renderItem={(entry) => {
             return (
@@ -266,7 +245,6 @@ const BillEntries = () => {
                 <motion.div key={entry._id} variants={fadeInUp}>
                   <BillEntriesDropdownView
                     entry={entry}
-                    onUpdate={updateOriginalEntry}
                   />
                 </motion.div>
               </motion.div>

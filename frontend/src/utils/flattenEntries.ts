@@ -1,4 +1,4 @@
-import { ENTRY_LABELS, EXTRA_CHARGE_LABELS, type EntryType, type ExtraCharge } from "../types/entry";
+import { ENTRY_LABELS, EXTRA_CHARGE_LABELS, type EntryType, type ExtraCharge } from "../types/billEntry";
 
 
 export function buildRows(entries: EntryType[], headers: string[]) {

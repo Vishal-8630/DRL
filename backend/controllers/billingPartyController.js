@@ -31,7 +31,7 @@ const updateBillingParty = async (req, res, next) => {
     if (!party) {
         return next(new AppError("Billing Party not found", 404));
     }
-    return successResponse(res, "Billing Party Updated");
+    return successResponse(res, "Billing Party Updated", party);
 }
 
 const getBillingPartyByName = async (req, res, next) => {

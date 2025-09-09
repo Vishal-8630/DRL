@@ -7,7 +7,7 @@ import connectDB from './config/db.js';
 import errorHandler from './middlewares/errorHandler.js';
 
 import authRoutes from './routes/authRoute.js';
-import billingEntryRoutes from './routes/billingEntryRoutes.js';
+import billEntryRoutes from './routes/billEntryRoutes.js';
 import billingPartyRoutes from './routes/billingPartyRoute.js';
 import vehicelEntryRoutes from './routes/vehicleEntryRoutes.js';
 import balancePartyRoutes from './routes/balancePartyRoutes.js';
@@ -29,7 +29,7 @@ app.use(cookieParser());
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/billing-entry', billingEntryRoutes); 
+app.use('/api/bill-entry', billEntryRoutes); 
 app.use('/api/billing-party', billingPartyRoutes);
 app.use('/api/vehicle-entry/', vehicelEntryRoutes);
 app.use('/api/balance-party', balancePartyRoutes);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styles from "./BillInvoice.module.scss";
-import type { EntryType, ExtraCharge } from "../../types/entry";
+import type { EntryType, ExtraCharge } from "../../types/billEntry";
 import Logo from "../../assets/logo.png";
 import { formatDate } from "../../utils/formatDate";
 import { formatNumber } from "../../utils/formatNumber";

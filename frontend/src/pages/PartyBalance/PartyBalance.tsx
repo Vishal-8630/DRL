@@ -4,7 +4,7 @@ import {
   VEHICLE_ENTRY_LABELS,
   type BalancePartyType,
   type VehicleEntryType,
-} from "../../types/vehicle";
+} from "../../types/vehicleEntry";
 import api from "../../api/axios";
 import { useDispatch } from "react-redux";
 import { addMessage } from "../../features/message";

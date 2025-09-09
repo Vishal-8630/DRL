@@ -1,23 +1,23 @@
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import { PARTY_LABELS, type BillingPartyType } from "../../types/party";
+import { PARTY_LABELS, type BillingPartyType } from "../../types/billingParty";
 import styles from "./BillingPartyDropdown.module.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { selectAuthLoading } from "../../features/auth/authSelectors";
-import { partyFailure, partyStart, partySuccess } from "../../features/party";
 import { addMessage } from "../../features/message";
-import api from "../../api/axios";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
+import { updateBillingPartyAsync } from "../../features/billingParty";
+import type { AppDispatch } from "../../app/store";
 
 interface PartyProps {
-  party: BillingPartyType;
-  partyState: {
-    localParty: BillingPartyType;
+  billingParty: BillingPartyType;
+  itemState: {
+    localItem: BillingPartyType;
     drafts: Partial<BillingPartyType>;
     editing: Set<keyof BillingPartyType>;
     isOpen: boolean;
   };
-  updatePartyState: (partyId: string, newState: Partial<any>) => void;
+  updateItem: (partyId: string, newState: Partial<any>) => void;
   updateDraft: (
     partyId: string,
     key: keyof BillingPartyType,
@@ -25,7 +25,6 @@ interface PartyProps {
   ) => void;
   toggleEditing: (partyId: string, key: keyof BillingPartyType) => void;
   toggleOpen: (partyId: string) => void;
-  updateOriginalParty: (updatedParty: BillingPartyType) => void;
 }
 
 const dropDownVariants: Variants = {
@@ -38,15 +37,14 @@ const dropDownVariants: Variants = {
 };
 
 const BillingPartyDropdown: React.FC<PartyProps> = ({
-  party,
-  partyState,
-  updatePartyState,
+  billingParty,
+  itemState,
+  updateItem,
   updateDraft,
   toggleEditing,
   toggleOpen,
-  updateOriginalParty,
 }) => {
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
   const loading = useSelector(selectAuthLoading);
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
@@ -58,70 +56,75 @@ const BillingPartyDropdown: React.FC<PartyProps> = ({
   });
 
   const handleEdit = (key: keyof BillingPartyType) => {
-    toggleEditing(party._id, key);
-    updateDraft(party._id, key, partyState.localParty[key] ?? "");
+    toggleEditing(billingParty._id, key);
+    updateDraft(billingParty._id, key, itemState.localItem[key] ?? "");
   };
 
   const handleCancel = (key: keyof BillingPartyType) => {
-    toggleEditing(party._id, key);
-    updatePartyState(party._id, {
-      drafts: { ...partyState.drafts, [key]: undefined },
+    toggleEditing(billingParty._id, key);
+    updateItem(billingParty._id, {
+      drafts: { ...itemState.drafts, [key]: undefined },
     });
   };
 
   const handleSave = (key: keyof BillingPartyType) => {
-    const updatedValue = partyState.drafts[key] ?? "";
-    updatePartyState(party._id, {
-      localParty: { ...partyState.localParty, [key]: updatedValue },
+    const updatedValue = itemState.drafts[key] ?? "";
+    updateItem(billingParty._id, {
+      localItem: { ...itemState.localItem, [key]: updatedValue },
     });
-    toggleEditing(party._id, key);
-    updatePartyState(party._id, {
-      drafts: { ...partyState.drafts, [key]: undefined },
+    toggleEditing(billingParty._id, key);
+    updateItem(billingParty._id, {
+      drafts: { ...itemState.drafts, [key]: undefined },
     });
   };
 
   const handleAbortChanges = () => {
-    updatePartyState(party._id, {
-      localParty: { ...party },
+    updateItem(billingParty._id, {
+      localItem: { ...billingParty },
       drafts: {},
       editing: new Set(),
     });
   };
 
   const handleSaveChanges = async () => {
-    dispatch(partyStart());
     try {
-      await api.post(`/billing-party/update-billing-party/${party._id}`, partyState.localParty);
-      dispatch(addMessage({ type: "success", text: "Entry Updated" }));
-      dispatch(partySuccess());
-      updateOriginalParty(partyState.localParty);
-    } catch (error: any) {
-      const errors = error.response?.data?.errors;
-      if (errors) {
-        Object.values(errors)
-          .flat()
-          .forEach((msg) => {
-            dispatch(addMessage({ type: "error", text: String(msg) }));
-          });
+      const resultAction = await dispatch(
+        updateBillingPartyAsync(itemState.localItem)
+      );
+      if (updateBillingPartyAsync.fulfilled.match(resultAction)) {
+        dispatch(
+          addMessage({
+            type: "success",
+            text: "Billing billingParty updated successfully",
+          })
+        );
+      } else if (updateBillingPartyAsync.rejected.match(resultAction)) {
+        const errors = resultAction.payload;
+        if (errors) {
+          dispatch(
+            addMessage({ type: "error", text: Object.entries(errors)[0][1] })
+          );
+        }
       }
-      dispatch(partyFailure());
+    } catch {
+      dispatch(addMessage({ type: "error", text: "Something went wrong" }));
     }
   };
 
   const hasChanges =
-    JSON.stringify(partyState.localParty) !== JSON.stringify(party);
+    JSON.stringify(itemState.localItem) !== JSON.stringify(billingParty);
 
   return (
     <div className={styles.container}>
-      <button className={styles.header} onClick={() => toggleOpen(party._id)}>
+      <button className={styles.header} onClick={() => toggleOpen(billingParty._id)}>
         <div className={styles.title}>
           <span className={styles.headingLabel}>Billing Party Name</span>
           <span className={styles.headingValue}>
-            {partyState.localParty.name || "—"}
+            {itemState.localItem.name || "—"}
           </span>
         </div>
         <span className={styles.icon}>
-          {partyState.isOpen ? <FaChevronUp /> : <FaChevronDown />}
+          {itemState.isOpen ? <FaChevronUp /> : <FaChevronDown />}
         </span>
       </button>
 
@@ -137,7 +140,7 @@ const BillingPartyDropdown: React.FC<PartyProps> = ({
       )}
 
       <AnimatePresence>
-        {partyState.isOpen && (
+        {itemState.isOpen && (
           <motion.div
             ref={contentRef}
             className={styles.content}
@@ -155,10 +158,10 @@ const BillingPartyDropdown: React.FC<PartyProps> = ({
                   string
                 ][]
               ).map(([key, label]) => {
-                const isEditing = partyState.editing.has(key);
+                const isEditing = itemState.editing.has(key);
                 const value = isEditing
-                  ? partyState.drafts[key] ?? ""
-                  : partyState.localParty[key] ?? "—";
+                  ? itemState.drafts[key] ?? ""
+                  : itemState.localItem[key] ?? "—";
 
                 return (
                   <div key={key} className={styles.row}>
@@ -170,7 +173,7 @@ const BillingPartyDropdown: React.FC<PartyProps> = ({
                           className={styles.input}
                           value={value as string}
                           onChange={(e) =>
-                            updateDraft(party._id, key, e.target.value)
+                            updateDraft(billingParty._id, key, e.target.value)
                           }
                         />
                         <div className={styles.actions}>

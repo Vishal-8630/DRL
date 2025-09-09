@@ -2,11 +2,11 @@ import { body, validationResult } from 'express-validator';
 
 export const billingPartyValidations = [
     body("name")
-        .notEmpty().withMessage("Billing Party Name is required"),
+        .trim().notEmpty().withMessage("Billing Party Name is required"),
     body("address")
-        .notEmpty().withMessage("Billing Party Address is required"),
+        .trim().notEmpty().withMessage("Billing Party Address is required"),
     body("gst_no")
-        .notEmpty().withMessage("Billing Party GST Number is required"),
+        .trim().notEmpty().withMessage("Billing Party GST Number is required"),
 
     (req, res, next) => {
         const errors = validationResult(req);

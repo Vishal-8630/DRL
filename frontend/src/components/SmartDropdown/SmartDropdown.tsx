@@ -13,7 +13,7 @@ interface Props {
   value?: string;
   placeholder?: string;
   inputRef?: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | undefined;
-  fetchOptions?: (query: string) => Promise<Option[]>;
+  fetchOptions?: (query: string) => Option[];
   onChange: (val: string, name: string, mode: "select" | "search") => void;
 }
 
@@ -87,9 +87,8 @@ const SmartDropdown = ({
   useEffect(() => {
     if (mode === "search" && fetchOptions && search.length > 0) {
       const timeout = setTimeout(() => {
-        fetchOptions(search)
-          .then(setData)
-          .catch(() => setData([]));
+        const fetchedOptions = fetchOptions(search);
+        setData(fetchedOptions);
       }, 500);
       return () => clearTimeout(timeout);
     } else if (mode === "search" && search.length === 0) {

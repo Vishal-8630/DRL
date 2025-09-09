@@ -3,22 +3,18 @@ import {
   EmptyVehicleEntry,
   type BalancePartyType,
   type VehicleEntryType,
-} from "../../types/vehicle";
+} from "../../types/vehicleEntry";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { selectVehicleLoading } from "../../features/vehicle/vehicleSelectors";
 import Loading from "../../components/Loading";
-import {
-  vehicleFailure,
-  vehicleStart,
-  vehicleSuccess,
-} from "../../features/vehicle";
 import { addMessage } from "../../features/message";
-import api from "../../api/axios";
 import FormInput from "../../components/FormInput";
 import styles from "./NewVehicleEntry.module.scss";
 import FormSection from "../../components/FormSection";
 import { useNavigate } from "react-router-dom";
+import { addVehicleEntryAsync, selectVehicleEntryLoading } from "../../features/vehicleEntry";
+import type { AppDispatch } from "../../app/store";
+import { balancePartySelectors, fetchBalanceParties } from "../../features/balanceParty";
 
 interface InputType {
   type: string;
@@ -59,30 +55,29 @@ const PARTY_DETAIL: InputType[] = [
 const NewVehicleEntry = () => {
   const [vehicleEntry, setVehicleEntry] =
     useState<VehicleEntryType>(EmptyVehicleEntry);
-  const [balanceParties, setBalanceParties] = useState<BalancePartyType[]>([]);
+    const balanceParties = useSelector(balancePartySelectors.selectAll);
   const [selectedBalanceParty, setSelectedBalanceParty] =
     useState<BalancePartyType>({
       _id: "",
       party_name: "",
     });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const errorsRef = useRef(errors);
+  const errorsRef = useRef<Record<string, string>>({});
+  const [, forceRender] = useState({});
 
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const loading = useSelector(selectVehicleLoading);
+  const dispatch: AppDispatch = useDispatch();
+  const loading = useSelector(selectVehicleEntryLoading);
 
   useEffect(() => {
-    const fetchAllBalanceParties = async () => {
-      try {
-        const { data } = await api.get("/balance-party/all-balance-parties");
-        setBalanceParties(data.data);
-      } catch (error: any) {
-        dispatch(addMessage({ type: "error", text: error.response?.data?.message }));
-      }
-    };
-    fetchAllBalanceParties();
-  }, []);
+    dispatch(fetchBalanceParties());
+  }, [dispatch]);
+
+  useEffect(() => {
+    setVehicleEntry((prev) => ({
+      ...prev,
+      balance_party: selectedBalanceParty,
+    }));
+  }, [selectedBalanceParty]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -108,7 +103,7 @@ const NewVehicleEntry = () => {
     }
     if (errorsRef.current[name]) {
       errorsRef.current[name] = "";
-      setErrors({ ...errorsRef.current });
+      forceRender({});
     }
     setVehicleEntry((prev) => ({ ...prev, [name]: value }));
   };
@@ -125,12 +120,12 @@ const NewVehicleEntry = () => {
         setSelectedBalanceParty({ _id: "", party_name: "" });
       } else {
         const party = balanceParties.find((p) => p.party_name === val)!;
-        setVehicleEntry((prev) => ({ ...prev, balance_party: party }));
+        setSelectedBalanceParty(party);
       }
     }
   };
 
-  const fetchOptions = async (search: string): Promise<Option[]> => {
+  const fetchOptions = (search: string): Option[] => {
     const fetchedBalanceParties = balanceParties.filter(
       (party) =>
         party.party_name &&
@@ -149,33 +144,25 @@ const NewVehicleEntry = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(vehicleStart());
+    if (!selectedBalanceParty.party_name.trim()) {
+      dispatch(addMessage({ type: "error", text: "Please select a party" }));
+      return;
+    }
     try {
-      const response = await api.post(
-        "/vehicle-entry/new-vehicle-entry",
-        vehicleEntry
-      );
-      dispatch(addMessage({ type: "success", text: response.data.message }));
-      dispatch(vehicleSuccess());
-      navigate("/vehicle-entry/all-vehicle-entries");
-    } catch (error: any) {
-      const errorsObj = error.response?.data?.errors || {};
-      Object.entries(errorsObj).forEach(([key, value]) => {
-        errorsRef.current[key] = value as string;
-      });
-      setErrors({ ...errorsRef.current });
-      dispatch(
-        addMessage({
-          type: "error",
-          text:
-            Object.keys(errorsObj).length > 0
-              ? "Please fill all the required fields"
-              : error.response?.data?.message
-              ? error.response?.data?.message
-              : "New Entry Creation Failed",
-        })
-      );
-      dispatch(vehicleFailure());
+      const resultAction = await dispatch(addVehicleEntryAsync(vehicleEntry));
+      if (addVehicleEntryAsync.fulfilled.match(resultAction)) {
+        dispatch(addMessage({  type: "success", text: "New vehicle entry added successfully" }));
+        navigate("/vehicle-entry/all-vehicle-entries");
+      } else if (addVehicleEntryAsync.rejected.match(resultAction)) {
+        const errors = resultAction.payload;
+        if (errors && Object.keys(errors).length > 0) {
+          errorsRef.current = errors;
+          forceRender({});
+        }
+        dispatch(addMessage({ type: "error", text: errors?.message || "Please fill all the require fields" }));
+      }
+    } catch {
+      dispatch(addMessage({ type: "error", text: "Something went wrong" }));
     }
   };
 
@@ -208,7 +195,7 @@ const NewVehicleEntry = () => {
 
       if (input.name === "party_name") {
         options = [];
-        value = vehicleEntry.balance_party.party_name;
+        value = selectedBalanceParty.party_name;
         placeholder = "Select a Balance Party";
         selectMode = "search";
       }
