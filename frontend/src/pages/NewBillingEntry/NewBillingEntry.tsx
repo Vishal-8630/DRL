@@ -74,15 +74,16 @@ const Entry: React.FC = () => {
   /** -------------------- Calculate Fields -------------------- **/
   useEffect(() => {
     const calculateFields = () => {
-      const gstRate = state === "UP" ? 0.06 : 0.12;
+      const gstRate = state === "UP" ? 0.09 : 0.18;
       const rate = Number(entry.rate) || 0;
+      const advance = Number(entry.advance) || 0;
       const extraTotal = entry.extra_charges.reduce(
         (sum, ec) => sum + Number(ec.amount || 0),
         0
       );
-      const gst = Math.round(rate * gstRate * 100) / 100;
+      const gst = Math.round((rate + extraTotal) * gstRate * 100) / 100;
       const subTotal = rate + extraTotal;
-      const grandTotal = state === "UP" ? subTotal + 2 * gst : subTotal + gst;
+      const grandTotal = (state === "UP" ? subTotal + 2 * gst : subTotal + gst) - advance;
 
       setEntry((prev) => ({
         ...prev,
@@ -94,7 +95,7 @@ const Entry: React.FC = () => {
       }));
     };
     calculateFields();
-  }, [entry.rate, entry.extra_charges, state]);
+  }, [entry.rate, entry.extra_charges, state, entry.advance]);
 
   /** -------------------- Handlers -------------------- **/
   const handleChange = (
@@ -157,9 +158,19 @@ const Entry: React.FC = () => {
   ) => {
     setEntry((prev) => ({
       ...prev,
-      extra_charges: prev.extra_charges.map((ec) =>
-        ec._id === id ? { ...ec, [field]: value } : ec
-      ),
+      extra_charges: prev.extra_charges.map((ec) => {
+        if (ec._id !== id) return ec;
+
+        let updated = { ...ec, [field]: value };
+
+        if (field === "rate" || field === "per_amount" || field === "amount") {
+          const rate = Number(updated.rate) || 0;
+          const per_amount = Number(updated.per_amount) || 0;
+          updated.amount= (rate * per_amount).toString();
+        }
+
+        return updated;
+      }),
     }));
   };
 
@@ -268,6 +279,7 @@ const Entry: React.FC = () => {
           options={options}
           error={error}
           selectMode={selectMode}
+          inputType={input.inputType}
           inputRef={inputRef || undefined}
           onChange={handleChange}
           onSelectChange={(val, name, mode) =>

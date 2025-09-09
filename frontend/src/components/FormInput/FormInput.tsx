@@ -3,6 +3,11 @@ import { motion } from "framer-motion";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import styles from "./FormInput.module.scss";
 import SmartDropdown from "../SmartDropdown";
+import {
+  filterAddress,
+  filterNumber,
+  filterText,
+} from "../../utils/filterInput";
 
 type Option = { label: string; value: string };
 
@@ -17,13 +22,22 @@ interface FormInputProps {
   icon?: React.ReactNode;
   options?: Option[];
   selectMode?: "select" | "search";
-  inputRef?: React.RefObject<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | undefined;
+  inputType?: string;
+  inputRef?:
+    | React.RefObject<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >
+    | undefined;
   onChange: (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => void;
-  onSelectChange?: (val: string, name: string, mode: "select" | "search") => void;
+  onSelectChange?: (
+    val: string,
+    name: string,
+    mode: "select" | "search"
+  ) => void;
   fetchOptions?: (val: string) => Option[];
 }
 
@@ -38,6 +52,7 @@ const FormInput: React.FC<FormInputProps> = ({
   icon,
   options = [],
   selectMode,
+  inputType,
   inputRef,
   onChange,
   onSelectChange,
@@ -53,6 +68,25 @@ const FormInput: React.FC<FormInputProps> = ({
 
   const handleFocus = () => setIsFocused(true);
   const handleBlur = () => setIsFocused(false);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    let value = e.target.value;
+    if (inputType === "number") {
+      value = filterNumber(value);
+    } else if (inputType === "text") {
+      value = filterText(value);
+    } else {
+      value = filterAddress(value);
+    }
+    onChange({
+      ...e,
+      target: { ...e.target, name: e.target.name, value: value },
+    } as React.ChangeEvent<typeof e.target>);
+  };
 
   return (
     <div className={styles.formGroup}>
@@ -96,7 +130,7 @@ const FormInput: React.FC<FormInputProps> = ({
               name={name}
               value={value}
               placeholder={placeholder}
-              onChange={onChange}
+              onChange={handleInputChange}
               onFocus={handleFocus}
               onBlur={handleBlur}
               className={hasIcon ? `${styles.withIcon}` : ""}

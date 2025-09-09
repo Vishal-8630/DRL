@@ -10,12 +10,15 @@ import { useDispatch } from "react-redux";
 import { addMessage } from "../../features/message";
 import { motion } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import { balancePartySelectors, fetchBalanceParties } from "../../features/balanceParty";
+import type { AppDispatch } from "../../app/store";
 
 const DEBOUNCE_DELAY = 500;
 
 const PartyBalance = () => {
   const [search, setSearch] = useState<string>("");
-  const [parties, setParties] = useState<BalancePartyType[]>([]);
+  const parties = useSelector(balancePartySelectors.selectAll);
   const [filteredParties, setFilteredParties] = useState<BalancePartyType[]>(
     []
   );
@@ -26,28 +29,11 @@ const PartyBalance = () => {
   let pendingTotal = 0,
     receivedTotal = 0;
 
-  const dispatch = useDispatch();
-
-  const fetchAllBalanceParties = useCallback(async () => {
-    try {
-      const response = await api.get("/balance-party/all-balance-parties");
-      const data: BalancePartyType[] = response.data.data;
-      setParties(data);
-    } catch (error: any) {
-      dispatch(
-        addMessage({
-          type: "error",
-          text:
-            error.response?.data?.message || "Failed to fetch balance parties",
-        })
-      );
-      console.error("Failed to fetch balance parties", error.response);
-    }
-  }, [dispatch]);
+  const dispatch: AppDispatch = useDispatch();
 
   useEffect(() => {
-    fetchAllBalanceParties();
-  }, [fetchAllBalanceParties]);
+    dispatch(fetchBalanceParties());
+  }, [dispatch, search]);
 
   // debounce search
   useEffect(() => {
@@ -136,7 +122,7 @@ const PartyBalance = () => {
                   {party.party_name}
                 </motion.div>
               ))
-          : !searchParty && <p>Enter Party name for searching parties</p>}
+          : !searchParty && <p>Enter Party name for searching balance</p>}
       </div>
 
       {partyVehicleEntries?.length && (

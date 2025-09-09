@@ -12,16 +12,24 @@ import FormInput from "../../components/FormInput";
 import styles from "./NewVehicleEntry.module.scss";
 import FormSection from "../../components/FormSection";
 import { useNavigate } from "react-router-dom";
-import { addVehicleEntryAsync, selectVehicleEntryLoading } from "../../features/vehicleEntry";
+import {
+  addVehicleEntryAsync,
+  selectVehicleEntryLoading,
+} from "../../features/vehicleEntry";
 import type { AppDispatch } from "../../app/store";
-import { balancePartySelectors, fetchBalanceParties } from "../../features/balanceParty";
+import {
+  balancePartySelectors,
+  fetchBalanceParties,
+} from "../../features/balanceParty";
 
 interface InputType {
   type: string;
   label: string;
   name: string;
+  inputType?: string;
   options?: string[];
 }
+
 type Option = { label: string; value: string };
 
 const VEHICLE_INPUTS: InputType[] = [
@@ -33,18 +41,23 @@ const VEHICLE_INPUTS: InputType[] = [
 ];
 
 const BALANCE_INPUTS: InputType[] = [
-  { type: "number", label: "Freight", name: "freight" },
-  { type: "number", label: "Driver Cash", name: "driver_cash" },
-  { type: "number", label: "Dala", name: "dala" },
-  { type: "number", label: "Kamisan", name: "kamisan" },
-  { type: "number", label: "In AC", name: "in_ac" },
-  { type: "number", label: "Halting", name: "halting" },
-  { type: "number", label: "Balance", name: "balance" },
+  { type: "number", label: "Freight", name: "freight", inputType: "number" },
+  {
+    type: "number",
+    label: "Driver Cash",
+    name: "driver_cash",
+    inputType: "number",
+  },
+  { type: "number", label: "Dala", name: "dala", inputType: "number" },
+  { type: "number", label: "Kamisan", name: "kamisan", inputType: "number" },
+  { type: "number", label: "In AC", name: "in_ac", inputType: "number" },
+  { type: "number", label: "Halting", name: "halting", inputType: "number" },
+  { type: "number", label: "Balance", name: "balance", inputType: "number" },
 ];
 
 const PARTY_DETAIL: InputType[] = [
   { type: "select", label: "Party Name", name: "party_name" },
-  { type: "input", label: "Owner", name: "owner" },
+  { type: "input", label: "Owner", name: "owner", inputType: "text" },
   {
     name: "status",
     label: "Status",
@@ -55,7 +68,7 @@ const PARTY_DETAIL: InputType[] = [
 const NewVehicleEntry = () => {
   const [vehicleEntry, setVehicleEntry] =
     useState<VehicleEntryType>(EmptyVehicleEntry);
-    const balanceParties = useSelector(balancePartySelectors.selectAll);
+  const balanceParties = useSelector(balancePartySelectors.selectAll);
   const [selectedBalanceParty, setSelectedBalanceParty] =
     useState<BalancePartyType>({
       _id: "",
@@ -78,6 +91,25 @@ const NewVehicleEntry = () => {
       balance_party: selectedBalanceParty,
     }));
   }, [selectedBalanceParty]);
+
+  useEffect(() => {
+    const freight = Number(vehicleEntry.freight) || 0;
+    const driver_cash = Number(vehicleEntry.driver_cash) || 0;
+    const dala = Number(vehicleEntry.dala) || 0;
+    const kamisan = Number(vehicleEntry.kamisan) || 0;
+    const in_ac = Number(vehicleEntry.in_ac) || 0;
+    const halting = Number(vehicleEntry.halting) || 0;
+    const balance = freight - (driver_cash + dala + kamisan + in_ac) + halting;
+    setVehicleEntry((prev) => ({ ...prev, balance: String(balance) }));
+  }, [
+    vehicleEntry.freight,
+    vehicleEntry.driver_cash,
+    vehicleEntry.dala,
+    vehicleEntry.kamisan,
+    vehicleEntry.in_ac,
+    vehicleEntry.halting,
+    vehicleEntry.balance
+  ]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -151,7 +183,12 @@ const NewVehicleEntry = () => {
     try {
       const resultAction = await dispatch(addVehicleEntryAsync(vehicleEntry));
       if (addVehicleEntryAsync.fulfilled.match(resultAction)) {
-        dispatch(addMessage({  type: "success", text: "New vehicle entry added successfully" }));
+        dispatch(
+          addMessage({
+            type: "success",
+            text: "New vehicle entry added successfully",
+          })
+        );
         navigate("/vehicle-entry/all-vehicle-entries");
       } else if (addVehicleEntryAsync.rejected.match(resultAction)) {
         const errors = resultAction.payload;
@@ -159,7 +196,12 @@ const NewVehicleEntry = () => {
           errorsRef.current = errors;
           forceRender({});
         }
-        dispatch(addMessage({ type: "error", text: errors?.message || "Please fill all the require fields" }));
+        dispatch(
+          addMessage({
+            type: "error",
+            text: errors?.message || "Please fill all the require fields",
+          })
+        );
       }
     } catch {
       dispatch(addMessage({ type: "error", text: "Something went wrong" }));
@@ -211,6 +253,7 @@ const NewVehicleEntry = () => {
           placeholder={placeholder}
           selectMode={selectMode}
           options={options}
+          inputType={input.inputType}
           error={errorsRef.current[input.name]}
           onChange={handleChange}
           onSelectChange={handleSelectChange}

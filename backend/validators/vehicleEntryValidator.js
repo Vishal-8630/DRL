@@ -11,18 +11,6 @@ export const vehicleEntryValidation = [
         .trim().notEmpty().withMessage('To is required'),
     body('freight')
         .trim().notEmpty().withMessage('Freight is required'),
-    body('driver_cash')
-        .trim().notEmpty().withMessage('Driver Cash is required'),
-    body('dala')
-        .trim().notEmpty().withMessage('Dala is required'),
-    body('kamisan')
-        .trim().notEmpty().withMessage('Kamisan is required'),
-    body('in_ac')
-        .trim().notEmpty().withMessage('In AC is required'),
-    body('halting')
-        .trim().notEmpty().withMessage('Halting is required'),
-    body('balance')
-        .trim().notEmpty().withMessage('Balance is required'),
     body('owner')
         .trim().notEmpty().withMessage('Owner is required'),
     body('status')
