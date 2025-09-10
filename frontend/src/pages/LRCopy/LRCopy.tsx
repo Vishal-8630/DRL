@@ -1,6 +1,6 @@
 import { FaSearch, FaTimes } from "react-icons/fa";
 import styles from "./LRCopy.module.scss";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Invoice from "../../components/Invoice";
 import { useDispatch } from "react-redux";
 import type { BillEntryType } from "../../types/billEntry";
@@ -8,15 +8,20 @@ import { addMessage } from "../../features/message";
 import { useReactToPrint } from "react-to-print";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { motion } from "framer-motion";
-import { searchBillEntriesByParamAsync } from "../../features/billEntry";
 import type { AppDispatch } from "../../app/store";
+import { useSelector } from "react-redux";
+import { billEntrySelectors, fetchBillEntriesAsync } from "../../features/billEntry";
 
 const LRCopy = () => {
   const [search, setSearch] = useState("");
   const [entry, setEntry] = useState<BillEntryType | null>(null);
+  const entries = useSelector(billEntrySelectors.selectAll);
   const invoiceRef = useRef<HTMLDivElement>(null);
   const dispatch: AppDispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchBillEntriesAsync());
+  }, [dispatch]);
 
   const handleSearchClear = () => {
     setSearch("");
@@ -43,22 +48,11 @@ const LRCopy = () => {
         addMessage({ type: "error", text: "Please enter something to search" })
       );
     }
-    try {
-      const resultAction = await dispatch(
-        searchBillEntriesByParamAsync({ lr_no: search })
-      );
-      if (searchBillEntriesByParamAsync.fulfilled.match(resultAction)) {
-        const entries = resultAction.payload as BillEntryType[];
-        if (entries.length > 0) {
-          setEntry(entries[0]);
-        } else {
-          dispatch(addMessage({ type: "info", text: "No entry found" }));
-        }
-      } else if (searchBillEntriesByParamAsync.rejected.match(resultAction)) {
-        dispatch(addMessage({ type: "error", text: "Failed to fetch entry" }));
-      }
-    } catch {
-      dispatch(addMessage({ type: "error", text: "Something went wrong" }));
+    const searchedEntry = entries.find(e => e.lr_no === search);
+    if (searchedEntry) {
+      setEntry(searchedEntry);
+    } else {
+      dispatch(addMessage({ type: "info", text: "No entry found" }));
     }
   };
 
@@ -141,15 +135,12 @@ const LRCopy = () => {
               <FaTimes size={20} onClick={handleSearchClear} />
             </div>
           )}
-          <motion.button
+          <button
             className={styles.searchBtn}
             onClick={handleSearch}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
             Search
-          </motion.button>
+          </button>
         </div>
       </div>
       <div ref={invoiceRef} className={styles.invoiceContainer}>

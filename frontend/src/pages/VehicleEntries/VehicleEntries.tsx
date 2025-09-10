@@ -17,6 +17,7 @@ import {
 } from "../../features/vehicleEntry";
 import type { AppDispatch } from "../../app/store";
 import { useItemStates } from "../../hooks/useItemStates";
+import ExcelButton from "../../components/ExcelButton";
 
 const VehicleEntries = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -75,6 +76,7 @@ const VehicleEntries = () => {
               );
             }}
           />
+          <ExcelButton data={filteredEntries} fileNamePrefix="Vehicle_Entries" />
         </>
       </motion.div>
     </div>

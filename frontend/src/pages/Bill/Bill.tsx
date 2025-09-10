@@ -1,6 +1,6 @@
 import { FaSearch, FaTimes } from "react-icons/fa";
 import styles from "./Bill.module.scss";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useReactToPrint } from "react-to-print";
 import { addMessage } from "../../features/message";
@@ -12,7 +12,8 @@ import { useSelector } from "react-redux";
 import Loading from "../../components/Loading";
 import { motion } from "framer-motion";
 import {
-  searchBillEntriesByParamAsync,
+  billEntrySelectors,
+  fetchBillEntriesAsync,
   selectBillEntryLoading,
 } from "../../features/billEntry";
 import type { AppDispatch } from "../../app/store";
@@ -20,9 +21,14 @@ import type { AppDispatch } from "../../app/store";
 const Bill = () => {
   const [search, setSearch] = useState("");
   const [entry, setEntry] = useState<Partial<BillEntryType> | {}>({});
+  const entries = useSelector(billEntrySelectors.selectAll);
   const billRef = useRef<HTMLDivElement>(null);
   const dispatch: AppDispatch = useDispatch();
   const loading = useSelector(selectBillEntryLoading);
+
+  useEffect(() => {
+    dispatch(fetchBillEntriesAsync());
+  }, [dispatch]);
 
   const handleSearchClear = () => {
     setSearch("");
@@ -49,23 +55,11 @@ const Bill = () => {
         addMessage({ type: "error", text: "Please enter something to search" })
       );
     }
-
-    try {
-      const resultAction = await dispatch(
-        searchBillEntriesByParamAsync({ bill_no: search })
-      );
-      if (searchBillEntriesByParamAsync.fulfilled.match(resultAction)) {
-        const entries = resultAction.payload as BillEntryType[];
-        if (entries.length > 0) {
-          setEntry(entries[0]);
-        } else {
-          dispatch(addMessage({ type: "info", text: "No entry found" }));
-        }
-      } else if (searchBillEntriesByParamAsync.rejected.match(resultAction)) {
-        dispatch(addMessage({ type: "error", text: "Failed to fetch entry" }));
-      }
-    } catch {
-      dispatch(addMessage({ type: "error", text: "Something went wrong" }));
+    const searchedEntry = entries.find((e) => e.bill_no === search);
+    if (searchedEntry) {
+      setEntry(searchedEntry);
+    } else {
+      dispatch(addMessage({ type: "info", text: "No entry found" }));
     }
   };
 

@@ -1,11 +1,16 @@
 @use '../../styles/globals' as *;
 
-.invoiceContainer {
+.invoice {
     font-family: Arial, sans-serif;
     font-size: 12px;
     padding: 20px;
     margin: 20px;
-    border: 1px solid #000;
+    min-width: 750px;
+
+    @include respond-to(lg) {
+        margin: 0;
+        padding: 0;
+    }
 }
 
 hr {

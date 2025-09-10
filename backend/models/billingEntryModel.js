@@ -147,7 +147,7 @@ const entrySchema = mongoose.Schema({
     if_gst_other_state: {
         type: String,
     }
-});
+}, { timestamps: true });
 
 const Entry = mongoose.model("Entry", entrySchema);
 export default Entry;

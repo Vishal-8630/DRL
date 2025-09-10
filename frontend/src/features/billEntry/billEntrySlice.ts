@@ -101,6 +101,7 @@ export const searchBillEntriesByParamAsync = createAsyncThunk<
     "billEntry/searchByParam",
     async (params, thunkAPI) => {
         const { rejectWithValue } = thunkAPI;
+        console.log(params);
         try {
             const response = await api.post("/bill-entry/search/by-param", {params});
             return response.data.data as BillEntryType[];

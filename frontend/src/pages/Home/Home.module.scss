@@ -72,48 +72,19 @@
       @include respond-to(md) {
         gap: $spacing-sm;
         @include spacing(margin, (top, 0));
+        flex-direction: column;
       }
 
       @include respond-to(xl) {
         width: 25rem;
       }
 
-      button {
-        cursor: pointer;
-        border: none;
-        background-color: $primary;
-        @include responsive-font(0.6rem, 1rem);
-        @include text-color($neutral-light);
-        @include spacing(padding, (horizontal, $spacing-lg), (vertical, $spacing-md));
-        @include border-radius($spacing-sm);
-        font-family: $font-link;
-
-        @include respond-to(md) {
-          @include spacing(padding, (horizontal, $spacing-sm), (vertical, $spacing-sm));
-        }
-      }
-
       .quoteBtn {
-        @include bg-color($secondary);
-        @include text-color($primary);
-        @include border($size: 1px, $color: $primary);
-        @include transition($duration: 0.5s);
-
-        &:hover {
-          @include bg-color($primary);
-          @include text-color($secondary);
-          transform: scale(1.05);
-        }
+        @include secondary-btn();
       }
 
       .contactBtn {
-        @include transition($duration: 0.5s);
-
-        &:hover {
-          @include bg-color($secondary);
-          @include text-color($primary);
-          @include border($size: 1px, $color: $primary);
-        }
+        @include primary-btn();
       }
     }
   }
@@ -153,18 +124,7 @@
     @include spacing(margin, (top, $spacing-lg));
 
     button {
-      cursor: pointer;
-      border: none;
-      @include bg-color($secondary);
-      @include responsive-font(0.6rem, 1rem);
-      @include text-color($neutral-dark);
-      @include spacing(padding, (horizontal, $spacing-lg), (vertical, $spacing-md));
-      @include border-radius($spacing-sm);
-      font-family: $font-link;
-
-      @include respond-to(md) {
-        @include spacing(padding, (horizontal, $spacing-sm), (vertical, $spacing-sm));
-      }
+      @include secondary-btn();
     }
   }
 }
@@ -207,21 +167,6 @@
   }
 
   .inquiryBtn {
-    cursor: pointer;
-    border: none;
-    background-color: $primary;
-    @include responsive-font(0.6rem, 1rem);
-    @include text-color($neutral-light);
-    @include spacing(padding, (horizontal, $spacing-lg), (vertical, $spacing-md));
-    @include border-radius($spacing-sm);
-    @include bg-color($secondary);
-    @include text-color($primary);
-    @include border($size: 1px, $color: $primary);
-    @include transition($duration: 0.5s);
-    font-family: $font-link;
-
-    &:hover {
-      transform: scale(1.05);
-    }
+    @include secondary-btn();
   }
 }

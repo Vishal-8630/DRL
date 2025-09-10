@@ -32,7 +32,7 @@ const userSchema = mongoose.Schema({
         type: Boolean,
         default: false
     }
-});
+}, { timestamps: true });
 
 // Encrypt password before saving
 userSchema.pre('save', async function (next) {

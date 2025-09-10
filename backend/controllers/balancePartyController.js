@@ -12,7 +12,7 @@ const newBalanceParty = async (req, res, next) => {
 };
 
 const getAllBalanceParties = async (req, res) => {
-    const balanceParties = await BalanceParty.find();
+    const balanceParties = await BalanceParty.find().sort({ createdAt: -1 });
     return successResponse(res, "", balanceParties);
 };
 

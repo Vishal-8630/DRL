@@ -37,7 +37,7 @@ const addNewBillingEntry = async (req, res, next) => {
 }
 
 const getAllBillingEntries = async (req, res) => {
-    const entries = await Entry.find().populate("billing_party");
+    const entries = await Entry.find().populate("billing_party").sort({ createdAt: -1 });
 
     return successResponse(res, "", entries);
 }

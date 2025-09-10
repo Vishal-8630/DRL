@@ -9,7 +9,6 @@ import styles from "./BalanceParties.module.scss";
 import PaginatedList from "../../components/PaginatedList";
 import FilterContainer from "../../components/FilterContainer";
 import Loading from "../../components/Loading";
-import { BalancePartyFilters } from "../../filters/BalancePartyFilters";
 import {
   balancePartySelectors,
   fetchBalanceParties,
@@ -17,6 +16,8 @@ import {
 } from "../../features/balanceParty";
 import type { AppDispatch } from "../../app/store";
 import { useItemStates } from "../../hooks/useItemStates";
+import ExcelButton from "../../components/ExcelButton";
+import { BalancePartyFilters } from "../../filters/BalancePartyFilters";
 
 const BalanceParties = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -81,6 +82,7 @@ const BalanceParties = () => {
             itemsPerPage={10}
             renderItem={renderItem}
           />
+          <ExcelButton data={filteredBalanceParties} fileNamePrefix="Balance_Parties" />
         </section>
       </motion.div>
     </div>

@@ -13,6 +13,20 @@ export function applyFilters<T>(data: T[], filters: FilterWithValue<T>[]): T[] {
       if (fieldValue == null) return false;
 
       switch (type) {
+        case "month": {
+          const year = new Date().getFullYear();
+          const monthIndex = new Date(`${value} 1, ${year}`).getMonth();
+
+          const startDate = new Date(year, monthIndex, 1, 0, 0, 0, 0);
+          const endDate = new Date(year, monthIndex + 1, 0, 23, 59, 59, 999);
+
+          const ts = new Date(fieldValue as string).getTime();
+          const minTs = startDate.getTime();
+          const maxTs = endDate.getTime();
+
+          return ts >= minTs && ts <= maxTs;
+        }
+
         case "text":
           return fieldValue
             .toString()

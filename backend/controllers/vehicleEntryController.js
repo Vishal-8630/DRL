@@ -30,7 +30,7 @@ const addNewVehicleEntry = async (req, res, next) => {
 }
 
 const getAllVehicleEntries = async (req, res) => {
-    const vehicleEntries = await VehicleEntry.find().populate("balance_party");
+    const vehicleEntries = await VehicleEntry.find().populate("balance_party").sort({ createdAt: -1 });
     return successResponse(res, "", vehicleEntries);
 }
 

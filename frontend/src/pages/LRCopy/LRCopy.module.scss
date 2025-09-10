@@ -48,51 +48,26 @@
 }
 
 .searchBtn {
-    background-color: rgb(43, 43, 43);
-    border: none;
-    font-size: 1.1rem;
-    padding: 0.7rem 1rem;
-    font-weight: bold;
-    color: white;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.3s ease-in-out;
-    letter-spacing: 0.3px;
-
-    &:hover {
-        background-color: lighten(rgb(43, 43, 43), 10%);
-    }
+    @include primary-btn();
 }
 
 .controls {
     width: 100%;
-    text-align: center;
+    @include flex-center();
+    gap: 15px;
+    @include spacing(margin, (bottom, 1rem), (top, 1rem));
 
     .btn {
-        margin-left: 2rem;
-        margin-bottom: 1rem;
-        border: none;
-        font-size: 1.1rem;
-        padding: 0.7rem 1rem;
-        font-weight: bold;
-        color: $neutral-light;
-        cursor: pointer;
-        border-radius: 4px;
-        @include transition();
-        letter-spacing: 0.3px;
-        background-color: $neutral-dark;
-
-        &:hover {
-            background-color: lighten($neutral-dark, 10%);
-        }
-
-        &:active {
-            transform: scale(0.7);
-        }
+        @include primary-btn();
     }
 }
 
-@mdedia print {
+.invoiceContainer {
+    width: 100%;
+    overflow-x: scroll;
+}
+
+@media print {
     .invoiceContainer {
         width: 210mm;
         min-height: 297mm;

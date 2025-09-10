@@ -10,7 +10,7 @@ const billingPartySchema = mongoose.Schema({
     gst_no: {
         type: String
     }
-});
+}, { timestamps: true });
 
 const BillingParty = mongoose.model("BillingParty", billingPartySchema);
 export default BillingParty;

@@ -1,11 +1,11 @@
 import React from "react";
 import styles from "./Invoice.module.scss";
 import Logo from "../../assets/logo.png";
-import type { EntryType } from "../../types/billEntry";
+import type { BillEntryType } from "../../types/billEntry";
 import { formatDate } from "../../utils/formatDate";
 
 interface InvoiceProps {
-  entry: EntryType
+  entry: BillEntryType
 }
 
 const Invoice: React.FC<InvoiceProps> = ({ entry }) => {
@@ -14,7 +14,7 @@ const Invoice: React.FC<InvoiceProps> = ({ entry }) => {
     lrDate = new Date(entry?.lr_date);
   }
   return (
-    <div className={styles.invoiceContainer}>
+    <div className={styles.invoice}>
       <div className={styles.header}>
         <div className={`${styles.box} ${styles.flex_1} ${styles.text_center}`}>
           <div className={styles.logo}>

@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./Home.module.scss";
 import HeroSectionImg from "../../assets/hero-section-pic.jpg";
 import { motion } from "framer-motion";

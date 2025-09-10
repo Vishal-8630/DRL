@@ -12,7 +12,7 @@ import { fadeInUp, staggerContainer } from "../../animations/animations";
 import { motion } from "framer-motion";
 import Button from "../../components/Button";
 import PaginatedList from "../../components/PaginatedList";
-import { BillingPartyFilters } from "../../filters/BillingPartyFilters";
+import { BillingPartyFilters } from "../../filters/billingPartyFilters";
 import FilterContainer from "../../components/FilterContainer";
 import BillingPartyDropdown from "../../components/BillingPartyDropdown";
 import {
@@ -23,6 +23,7 @@ import {
 } from "../../features/billingParty";
 import type { AppDispatch } from "../../app/store";
 import { useItemStates } from "../../hooks/useItemStates";
+import ExcelButton from "../../components/ExcelButton";
 
 /* -------------------- Constants -------------------- */
 export const TABS = {
@@ -181,6 +182,7 @@ const BillingParty = () => {
                 );
               }}
             />
+            <ExcelButton data={filteredParties} fileNamePrefix="Billing_Parties" />
           </>
         )}
       </div>

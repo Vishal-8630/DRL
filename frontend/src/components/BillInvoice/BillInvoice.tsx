@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import styles from "./BillInvoice.module.scss";
-import type { EntryType, ExtraCharge } from "../../types/billEntry";
-import Logo from "../../assets/logo.png";
+import type { BillEntryType, ExtraCharge } from "../../types/billEntry";
 import { formatDate } from "../../utils/formatDate";
 import { formatNumber } from "../../utils/formatNumber";
 
 interface BillInvoiceProps {
-  entry: Partial<EntryType>;
+  entry: Partial<BillEntryType>;
 }
 
 const BILL_INVOICE_MAPPING = {
@@ -29,7 +28,7 @@ const BillInvoice: React.FC<BillInvoiceProps> = ({ entry }) => {
   const [grossBill, setGrossBill] = useState(0);
   const [totalBalance, setTotalBalance] = useState(0);
 
-  const isKeyDate = (key: keyof EntryType) =>
+  const isKeyDate = (key: keyof BillEntryType) =>
     key.toLowerCase().includes("date");
 
   useEffect(() => {
@@ -119,7 +118,7 @@ const BillInvoice: React.FC<BillInvoiceProps> = ({ entry }) => {
           </thead>
           <tbody>
             <tr>
-              {(Object.keys(BILL_INVOICE_MAPPING) as [keyof EntryType]).map(
+              {(Object.keys(BILL_INVOICE_MAPPING) as [keyof BillEntryType]).map(
                 (key) => {
                   if (typeof entry[key] === "string") {
                     if (isKeyDate(key)) {

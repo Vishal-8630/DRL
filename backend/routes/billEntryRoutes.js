@@ -17,6 +17,8 @@ router.put(
   billingEntryValidations,
   updateBillingEntry
 );
+
+// Need to remove it and it's controller.
 router.get("/search/by-param/", searchBillingEntryByParam);
 
 // Need to remove the route and its controller.

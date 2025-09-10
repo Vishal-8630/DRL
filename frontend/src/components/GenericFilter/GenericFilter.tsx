@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { FilterConfig, AppliedFilters } from "../../filters/filter";
 import styles from "./GenericFilter.module.scss";
 import SmartDropdown from "../SmartDropdown";
+import type { Option } from "../../pages/NewBillingEntry/constants";
 
 type Props<T> = {
   filters: FilterConfig<T>[];
@@ -10,8 +11,29 @@ type Props<T> = {
   onCancel: () => void;
 };
 
+const MONTHS = [
+  "january",
+  "february",
+  "march",
+  "april",
+  "may",
+  "june",
+  "july",
+  "august",
+  "september",
+  "october",
+  "november",
+  "december",
+];
+
 const GenericFilter = <T,>({ filters, onApply, onCancel }: Props<T>) => {
   const [filterValues, setFilterValues] = useState<Record<string, any>>({});
+  const options: Option[] = MONTHS.map((month) => {
+    return {
+      label: month.charAt(0).toUpperCase() + month.slice(1).toLowerCase(),
+      value: month,
+    };
+  });
 
   const handleChange = (field: string, value: any, type?: string) => {
     const key = type ? `${field}$${type}` : field;
@@ -40,15 +62,32 @@ const GenericFilter = <T,>({ filters, onApply, onCancel }: Props<T>) => {
   };
 
   return (
-    <div className={styles.filterContainer}>
+    <div className={styles.genericFilterContainer}>
       <h3>Choose Filters</h3>
       <div className={styles.filterBody}>
         {filters.map((f, idx) => {
+          if (f.type === "month") {
+            return <div key={idx} className={styles.monthContainer}>
+                <SmartDropdown
+                  label={f.label}
+                  name={f.field.toString()}
+                  mode="select"
+                  value={filterValues[`${f.field as string}$month`] || ""}
+                  options={options}
+                  placeholder="Select Month"
+                  onChange={(val) =>
+                    handleChange(f.field.toString(), val, "month")
+                  }
+                />
+              </div>
+          }
+
           if (f.type === "sort") {
             return (
               <div key={idx} className={styles.selectContainer}>
                 <SmartDropdown
                   label={f.label}
+                  name={f.field.toString()}
                   mode="select"
                   value={filterValues[`${f.field as string}$sort`] || ""}
                   options={[

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./PartyBalance.module.scss";
 import {
   VEHICLE_ENTRY_LABELS,
@@ -7,12 +7,15 @@ import {
 } from "../../types/vehicleEntry";
 import api from "../../api/axios";
 import { useDispatch } from "react-redux";
-import { addMessage } from "../../features/message";
 import { motion } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
 import { useSelector } from "react-redux";
-import { balancePartySelectors, fetchBalanceParties } from "../../features/balanceParty";
+import {
+  balancePartySelectors,
+  fetchBalanceParties,
+} from "../../features/balanceParty";
 import type { AppDispatch } from "../../app/store";
+import ExcelButton from "../../components/ExcelButton";
 
 const DEBOUNCE_DELAY = 500;
 
@@ -174,6 +177,12 @@ const PartyBalance = () => {
             </div>
           </div>
         </div>
+      )}
+      {partyVehicleEntries && partyVehicleEntries?.length > 0 && (
+        <ExcelButton
+          data={partyVehicleEntries}
+          fileNamePrefix={`${searchParty?.party_name}_balance`}
+        />
       )}
     </div>
   );

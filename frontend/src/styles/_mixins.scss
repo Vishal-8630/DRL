@@ -8,6 +8,12 @@
 // Media Query Mixin
 // -----------------------------
 @mixin respond-to($breakpoint) {
+  @if $breakpoint ==xsm {
+    @media (max-width: $breakpoint-xsm) {
+      @content;
+    }
+  }
+  
   @if $breakpoint ==sm {
     @media (max-width: $breakpoint-sm) {
       @content;
@@ -259,7 +265,7 @@
 @mixin main-heading {
   font-family: $font-heading;
   text-align: center;
-  @include spacing(margin, (bottom, $spacing-md), (top, $spacing-lg));
+  @include spacing(margin, (bottom, $spacing-md), (top, $spacing-sm));
   @include spacing(padding, (bottom, $spacing-sm));
   border-bottom: $border-dark;
   @include responsive-font(1.5rem, $heading-md, $heading-lg);

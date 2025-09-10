@@ -1,6 +1,6 @@
 import BillingParty from '../models/billingPartyModel.js';
+import AppError from '../utils/appError.js';
 import { successResponse } from '../utils/response.js';
-import AppError from '../utils/AppError.js';
 
 const newBillingParty = async (req, res, next) => {
     const { name, address, gst_no } = req.body;
@@ -14,7 +14,7 @@ const newBillingParty = async (req, res, next) => {
 }
 
 const getAllBillingParties = async (req, res) => {
-    const parties = await BillingParty.find();
+    const parties = await BillingParty.find().sort({ createdAt: -1 });
     return successResponse(res, "", parties);
 }
 

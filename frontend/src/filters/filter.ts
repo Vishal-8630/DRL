@@ -1,4 +1,4 @@
-export type FilterType = "sort" | "greater" | "less" | "range" | "text";
+export type FilterType = "sort" | "greater" | "less" | "range" | "text" | "month";
 
 export type SortDirection = "asc" | "desc";
 

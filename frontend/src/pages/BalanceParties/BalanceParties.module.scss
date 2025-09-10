@@ -10,6 +10,10 @@
 
     .heading {
         @include main-heading();
-        @include spacing(margin, (bottom, 2rem));
+        @include spacing(margin, (bottom, 2rem), (top, 1rem));
+    }
+
+    section {
+        @include spacing(margin, (bottom, 1rem));
     }
 }

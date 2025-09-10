@@ -79,7 +79,7 @@ const FormInput: React.FC<FormInputProps> = ({
       value = filterNumber(value);
     } else if (inputType === "text") {
       value = filterText(value);
-    } else {
+    } else if (inputType === "address") {
       value = filterAddress(value);
     }
     onChange({

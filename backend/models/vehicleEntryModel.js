@@ -54,7 +54,7 @@ const vehicleEntrySchema = mongoose.Schema({
         enum: ["From DRL", "To DRL"],
         default: "From DRL"
     }
-});
+}, { timestamps: true });
 
 const VehicleEntry = mongoose.model("VehicleEntry", vehicleEntrySchema);
 
